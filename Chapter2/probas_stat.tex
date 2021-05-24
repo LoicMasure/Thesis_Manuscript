@@ -1,0 +1,286 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%							PROBABILITIES AND STATISTICS					   %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Probability}
+\label{sec:probas}
+% Formal definition of proba
+We consider a probabilistic structure \((\Omega, \mset{A}, \mathrm{Pr})\), where \mset{A} denotes the \gls{sigmaAlg} of the set of all possible events \(\Omega\). 
+Formally, the \emph{probability measure} \(\mathrm{Pr}\) is a mapping \(\mset{A} \rightarrow [0,1]\) such that:
+\begin{enumerate}
+    \item the probability of all the possible events is 1, \ie{}, \(\prob{\Omega} = 1\);
+    \item the probability of the countable union of several mutually exclusive events \((A_n)_{n\in\natSet}\) equals the sum of their probabilities:
+    \begin{equation}
+        \label{eq:prop_2_proba}
+        \forall i, j \in \natSet, \mbox{if } A_i \cap A_j = \emptyset \mbox{ then } \prob{A_i \cup A_j} = \prob{A_i} + \prob{A_j} \enspace .
+    \end{equation}
+\end{enumerate}
+
+\paragraph{Random Variables.}
+We call \emph{random variable} (\resp{} random \emph{vector}), denoted by upper-case letters \randVar{X} (resp.~ bold letters \(\randVect{X}\)), any measurable map from \((\Omega, \mset{A})\) to a \gls{sigmaAlg} \(\mset{X}\subset \realSet\) (\resp{} \(\realSet^d, d \in \natSet^*\)).
+The probability of a random variable \randVar{X} taking value in a subset \(\mset{U} \subset \mset{X}\) is denoted by \(\prob{\randVar{X} \in \mset{U}}\).
+When \mset{U} is reduced to a singleton \(\mset{U} = \{\varObs{x}\}\) the same probability is denoted by \(\prob{\randVar{X} = \varObs{x}}\).
+% Discrete case
+If \mset{X} is a \gls{finite} or \gls{countable} subset of \(\realSet\), \randVar{X} is called \emph{discrete} and the mapping \(\mset{U} \mapsto \prob{\randVar{X} \in \mset{U}}\), called \gls{pmf}, verifies \(\prob{\randVar{X} \in \mset{U}} = \sum_{\varObs{x} \in \mset{U}} \prob{\randVar{X} = \varObs{x}}\).
+Therefore the \gls{pmf} can be fully defined by a \(\card{\mset{X}}\)-dimensional vector whose entries are non-negative reals that sum to one.
+The set of every \gls{pmf} is denoted by \(\probSet{\mset{X}}\).
+% Continuous case
+If \mset{X} is not finite nor countable, \randVar{X} is said \emph{continuous} and the mapping \(\mset{U} \mapsto \prob{\randVar{X} \in \mset{U}}\) is fully defined by the \gls{pdf} \(\varObs{x} \in \mset{X} \mapsto \pdf{\randVar{X}}{\varObs{x}} \in \realSet_+\) that verifies \(\prob{\randVar{X} \in \mset{U}} = \int_{\varObs{x}\in \mset{U}}\pdf{\randVar{X}}{\varObs{x}} d\varObs{x}\)~\cite[Thm.~1.104]{klenke2013probability}.
+
+\paragraph{Couple of Random Variables.}
+% Joint probas
+When two variables \randVar{X} and \randVar{Y} are considered, their \emph{joint} probability is denoted by \(\prob{\randVar{X} = \varObs{x}, \randVar{Y} = \varObs{y}}\).
+% Marginal laws
+We call \emph{marginal} probability the following quantity: \(\prob{\randVar{X} = \varObs{x}} = \int_{\varObs{y} \in \mset{Y}} \prob{\randVar{X} = \varObs{x}, \randVar{Y} = \varObs{y}} d\varObs{y}\).
+% Conditional probas
+The \emph{conditional} probability of \randVar{X} assuming the value \varObs{x} given an outcome \varObs{y} for \randVar{Y} is denoted by \(\prob{\randVar{X} = \varObs{x} \given \randVar{Y} = \varObs{y}}\).
+By definition, we have \(\prob{\randVar{X} \triangleq \varObs{x}, \randVar{Y} = \varObs{y}} = \prob{\randVar{X} = \varObs{x} \given \randVar{Y} = \varObs{y}} \prob{\randVar{Y} = \varObs{y}}\).
+In particular, \gls{iff} \(\prob{\randVar{X} = \varObs{x} \given \randVar{Y} = \varObs{y}} = \prob{\randVar{X} = \varObs{x}}\) we say that \randVar{X} and \randVar{Y} are \emph{independent} and the joint probability is then the product of the two \emph{marginal} probabilities.
+% Short notations
+The mapping \(\varObs{y} \mapsto \prob{\randVar{X} = \varObs{x} \given \randVar{Y} = \varObs{y}}\) is denoted by \(\prob{\randVar{X} = \varObs{x} \given \randVar{Y}}\).
+
+\paragraph{Moments of a Random Variable.}
+% Expected value
+The symbol \(\esper[]{\phi(\randVar{X})}\), or equivalently \(\esper[\randVar{X}]{\phi(\randVar{X})}\), denotes the expected value of a function \(\phi\) of the random variable \randVar{X}, under the distribution of \randVar{X}.
+We recall that in the continuous case \(\esper[\randVar{X}]{\phi(\randVar{X})} \eqdef \int_{\varObs{x} \in \mset{X}} \phi(\varObs{x})\pdf{\randVar{X}}{\varObs{x}} d\varObs{x}\).
+% Variance
+Likewise, symbols \(\var[]{\randVar{X}}\) and \(\var[\randVar{X}]{\randVar{X}}\) denote the variance of \randVar{X}.
+We recall that \(\var[]{\randVar{X}} \eqdef \esper[]{\left(\randVar{X} - \esper[]{\randVar{X}}\right)^2}\).
+% Covariance
+We note \(\cov{\randVar{X}}{\randVar{Y}} = \esper[]{\left(\randVar{X} - \esper[]{\randVar{X}}\right)\left(\randVar{Y} - \esper[]{\randVar{Y}}\right)}\) the \emph{covariance} of two random variables \randVar{X}, \randVar{Y}.
+It is worth emphasizing that \(\var[]{\randVar{X}} = \cov{\randVar{X}}{\randVar{X}}\).
+% Conditional expected value
+The mapping \(\varObs{y} \mapsto \esper[\randVar{X} \given \randVar{Y} = \varObs{y}]{\randVar{X}}\) is called \emph{conditional expected value} and is denoted by \(\esper[]{\randVar{X} \given \randVar{Y}}\).
+
+We now recall some useful probability results.
+\paragraph{Total Probabilities.}
+A consequence of \autoref{eq:prop_2_proba} and the definition of a conditional probability is the \emph{total probabilities} formula.
+Given two random variables \(\randVar{X} \in \mset{X}\), \(\randVar{Y} \in \mset{Y}\), and a subset \(\mset{U} \subset \mset{X}\) we have:
+\begin{eqnarray}
+    \prob{\randVar{X} \in \mset{U}} & = & \sum_{\varObs{y} \in \mset{Y}} 
+    \prob{\randVar{X} \in \mset{U}, \randVar{Y} = \varObs{y}} \\
+    & = & \sum_{\varObs{y} \in \mset{Y}} \prob{\randVar{X} \in \mset{U} \given \randVar{Y} = \varObs{y}} \prob{\randVar{Y} = \varObs{y}} \enspace .
+\end{eqnarray}
+In case \randVar{Y} is a continuous random variable, the latter formula involves integrals instead of sums.
+
+\paragraph{Bayes Theorem.}
+Since the random variables \(\randVar{X}\) and \(\randVar{Y}\) have symmetric roles in the definition of the joint probability, it is possible to easily \emph{invert} the conditional probability  according to the Bayes' theorem:
+\begin{equation}
+    \label{eq:bayes_thm}
+    \prob{\randVar{X} = \varObs{x} \given \randVar{Y} = \varObs{y}} = 
+    \frac{\prob{\randVar{Y} = \varObs{y} \given \randVar{X} = \varObs{x}} \prob{\randVar{X} = \varObs{x}}}{\prob{\randVar{Y} = \varObs{y}}} \enspace .
+\end{equation}
+In this context, the mapping \(\varObs{x} \mapsto \prob{\randVar{X} = \varObs{x}}\) is called the \emph{prior} of \randVar{X}, and describes the \gls{pmf} (of \gls{pdf} if continuous) of \randVar{X} without taking into account the information that observing \randVar{Y} may give about \randVar{X}.
+The mapping \(\varObs{x} \mapsto \prob{\randVar{X} = \varObs{x} \given \randVar{Y} = \varObs{y}}\) is referred to as \emph{posterior} probability of \randVar{X}, and gives the distribution of \randVar{X} once the outcome \varObs{y} of \randVar{Y} is taken into account.
+% Introducing likelihood
+Finally, for a fixed \(\varObs{y} \in \mset{Y}\), the mapping \(\varObs{x} \mapsto \prob{\randVar{Y} = \varObs{y} \given \randVar{X} = \varObs{x}}\) is called the \emph{likelihood} of \(\varObs{x}\) given the observation \(\varObs{y}\).
+It is worth mentioning that the likelihood is \emph{not} a probability distribution as is, since it is not normalized.
+% Generalization to continuous or semi-continuous distributions.
+Notions of measure's theory are needed to show that Bayes' theorem is valid and keeps unchanged in case of continuous random variables and in cases in which one of the two involved variables is discrete and the other one is continuous.
+The interested reader might refer to~\cite[Sec.~8.1, 8.2]{klenke2013probability}.
+
+% Useful laws: uniform, binomial, normal.
+\paragraph{Remarkable Probability Distributions.}
+This thesis will manipulate several different probability distributions that we detail hereafter.
+
+\subparagraph{Discrete Uniform Law.}
+We say that a random variable \randVar{X} follows a \emph{discrete random uniform} law  over a finite set \mset{X} if for each value \(\varObs{x} \in \mset{X}\) we have \(\prob{\randVar{X} = \varObs{x}} = \frac{1}{\card{\mset{X}}}\), that is, the probability of observing an outcome \(\varObs{x}\) does not depend on the value of the outcome itself.
+
+\subparagraph{Bernoulli Law.}
+A discrete random variable \(\X \in \{0,1\}\) follows a Bernoulli law of parameter \(p\), denoted by \(\mathcal{B}(p)\), if \(\prob{\X = 1} = p\) or equivalently \(\prob{\X = 0} = 1 - p\).
+The expected value of a Bernoulli law is \(p\) and its variance is \(p(1-p)\).
+
+\subparagraph{Binomial Law.}
+A discrete random variable \(\randVar{X} \in \llbracket 0,n\rrbracket\) follows a binomial law of parameters \(n,p\), denoted by \(\mathcal{B}(n, p)\), if \(\forall k \in \llbracket 0,n\rrbracket \mbox{, } \prob{\randVar{X} = k} = \binom{n}{k}p^k(1-p)^{n-k}\).
+The expected value of a binomial random variable is \(\esper[]{\randVar{X}} = np\) and its variance is \(\var[]{\randVar{X}} = np(1-p)\).
+
+\subparagraph{Gaussian Law.}
+The Gaussian or \emph{normal} distribution is a widely used model for the distribution of continuous variables.
+We use the symbol \(\randVar{X} \sim \normpdf{\mu}{\sigma^2}\) to denote a random variable \(\randVar{X}\) following a Gaussian distribution of parameters \(\mu \in \realSet\) and \(\sigma^2 \in \realSet_+\).
+For a \(\traceLength\)-dimensional random vector \(\randVect{X}\), we use the symbol \(\randVect{X} \sim \normpdf{\vectObs{M}}{\vectObs{\Sigma}}\) to denote a vector that follows a multi-variate Gaussian distribution of parameters \(\vectObs{M} \in \realSet^\traceLength\) and \(\vectObs{\Sigma} \in \realSet^{\traceLength \times \traceLength}\), positive-definite.
+The \gls{pdf} of a Gaussian distribution is completely determined by the value of its two parameters.
+It is given by the following expressions, respectively in uni-variate and multi-variate cases:
+\begin{eqnarray}
+    \pdf{\randVar{X}}{\varObs{x}} & \eqdef & \frac{1}{\sqrt{2\pi\sigma^2}}\exp{-\frac{1}{2}\left(\frac{\varObs{x} - \varObs{\mu}}{\sigma}\right)^2} \enspace , \\
+    \pdf{\randVect{X}}{\vectObs{x}} & \eqdef & \frac{1}{\sqrt{\left(2\pi\right)^\traceLength \det{\vectObs{\Sigma}}}}\exp{-\frac{1}{2} \left(\vectObs{x} - \vectObs{M}\right)^\intercal\vectObs{\Sigma}^{-1}\left(\vectObs{x} - \vectObs{M}\right)} \enspace .
+    \label{eq:gauss_law}
+\end{eqnarray}
+The expected value of a Gaussian coincides with the parameter \varObs{\mu} for the uni-variate case and with \vectObs{M} for the multi-variate case.
+The parameter \(\sigma^2\) coincides with the variance of the uni-variate distribution, while \(\vectObs{\Sigma}\) coincides with the \emph{covariance matrix} of the multi-variate one, \ie{} such that the coefficient \(\vectObs{\Sigma}[i,j]\) is \(\cov{\randVect{X}[i]}{\randVect{X}[j]}\).
+
+
+\paragraph{Chebyshev's Inequality for Confidence Intervals.}
+The \gls{ml} literature proposes several \emph{concentration} inequalities.
+They provide bounds on the probabilities followed by a random variable, depending on some information assumed to be known about the probability distribution.
+Chebyshev's inequality is one of them.
+Let \(\X\) be a real-valued random variable, then:
+\begin{equation}
+    \forall a > 0, \enspace \prob{\left|\X - \esper[]{\X} \right |} \leq \frac{\var[]{\X}}{a^2} \enspace .
+\end{equation}
+
+\paragraph{Notion of Convergence.}
+Let \((\randVar{A}_n)_n\) be a sequence of random variables and let \(\randVar{A}\) be another
+random variable.
+% Convergence in probability
+We say that \(\randVar{A}_n\) converges \emph{in probabilities} towards \(\randVar{A}\), denoted as
+\mbox{\(\randVar{A}_n \probConv{n} \randVar{A}\)} when the following property holds:
+\begin{equation}
+	\forall \epsilon > 0, \prob{ \lvert \randVar{A}_n - \randVar{A} \rvert \geq \epsilon}
+	\underset{n \to \infty}{\longrightarrow} 0.
+    \label{eq:conv_prob}
+\end{equation}
+Like with the classical definition of convergence, we may define a notion of \emph{convergence rate} as a function \(m\) defined hereafter:
+\begin{equation}
+    \decFonction{m}{]0,1[^2}{\natSet}{\epsilon, \delta}{\argmin\left\{n \in \natSet \given \prob{ \lvert \randVar{A}_n - \randVar{A} \rvert \geq \epsilon} \leq \delta\right\}} \enspace .
+    \label{eq:conv_rate}
+\end{equation}
+The existence of such function is ensured by the convergence in probabilities, \ie{} \autoref{eq:conv_prob}.
+
+% Convergence in law
+Likewise, we say that \(\randVar{A}_n\) converges \emph{in law} towards \(\randVar{A}\), denoted as \(\randVar{A}_n \lawConv{n} \randVar{A}\) when for all continuous bounded function \(\phi\) of random variable we have:
+\begin{equation}
+    \esper[\randVar{A}_n]{\phi(\randVar{A}_n)} \underset{n \to \infty}{\longrightarrow} \esper[]{\phi(\randVar{A})}.
+\end{equation}
+
+\subsection{Statistics}
+% Mean, empirical variance, covariance matrix, higher order moments
+We use the notation \(\dset = \{\x_1, \ldots, \x_N\}\) to denote a \emph{dataset} of \(N\) \gls{iid} observations of a random variable \X.
+This means that it can be seen as one observation of the random tuple \((\X_1, \ldots, \X_N)\), where the \(\X_i\) are \gls{iid} variables of same distribution as \X.
+The term \emph{statistics} refers to a branch of mathematics that aims to analyze, describe or interpret observed data.
+Differently, the word \emph{statistic} refers to any measure obtained applying a function to some observed data \(\dset\).
+As a consequence (and unless considering trivial cases), a statistic which depends on random variables is itself a random variable.
+
+% Distinction descriptive/inferential.
+\paragraph{Descriptive \vs{} Inferential Statistics.}
+We might distinguish two sub-branches in statistics: the \emph{descriptive} statistics, and the \emph{inferential} statistics.
+In descriptive statistics, data are described by means of more or less complex statistics (in the sense of measures) that may capture the relevant information necessary to exhaustively describe the data. 
+The most common of them being the \emph{empirical arithmetic mean}, the \emph{empirical covariance} and the \emph{empirical variance}, respectively:
+\begin{eqnarray}
+    \label{eq:mean}
+    \overline{\X} & \eqdef & \frac{1}{N} \sum_{i=1}^N \X_i \enspace , \\
+    \label{eq:covariance}
+    S_{\X, \randVar{Y}} & \eqdef & \frac{1}{N-1} \sum_{i=1}^N (\X_i - \overline{\X}) \cdot (\randVar{Y}_i - \overline{\randVar{Y}}) \enspace , \\
+    \label{eq:variance}
+    S_{\X}^2 & \eqdef & S_{\X, \X} \enspace ,
+\end{eqnarray}
+where the \(\randVar{Y}_i\) are \gls{iid}
+It is noticeable that the statistics defined in \autoref{eq:mean} and \autoref{eq:variance} may be seen as polynomial of the random variables \(\X_i\) denoting the observations from a dataset.
+They are qualified as statistical moments of order respectively one and two, since the degree of the underlying polynomial is respectively one and two.
+
+In inferential statistics, data are considered as sample observations of random variables and the data analysis aims at modeling the distribution of such variables.
+Dealing with random variables, inferential statistics exploit the probability theory framework and theorems.
+Statistics of data (in the sense of measures) play an important role in inferential statistics as well, usually with two goals.
+The first one aims at estimating random variable parameters.
+In this case, the statistics are called \emph{estimators} and will be denoted by a hat: for example \(\widehat{\esper[]{\X}}\) denotes an estimator for the expected value of \X.
+Likewise, the realization of an estimator random variable is called \emph{estimate} (or estimation).
+The second one aims at realizing \emph{statistical hypothesis} tests, in order to statistically validate or refute an hypothesis about the random variable \X.
+
+The most classical and intuitive estimator for the expected value is the empirical mean \(\overline{\X}\), in the sense that the expected value of the estimator is exactly \(\esper[]{\X}\) (we say that it is \emph{unbiased}), and its variance is shown to be minimal for a given number of observations.
+Therefore, such an estimator is said to be \emph{optimal}.
+
+% Maximum likelihood estimation
+\paragraph{Maximum Likelihood.}
+\label{sec:max_like}
+There exists a generic method to find optimal estimators, called \emph{maximum likelihood}.
+The idea is to consider the parameter \(\theta\) of a probability law as a possible realization of a random variable \(\Theta\) which is linked to the observations \(\X_1, \ldots, \X_N\).
+In this context, the \emph{likelihood function}, introduced in Bayes' theorem (see \autoref{eq:bayes_thm}), can be reformulated as \(\theta \mapsto \prob{\X_1=\x_1, \ldots, \X_N=\x_N \given \Theta = \theta}\).
+The maximum likelihood estimator of \(\theta\), denoted by \(\hat{\theta}\), is therefore obtained by maximizing the likelihood function.
+Informally, \(\hat{\theta}\) is the value which must be assigned to the parameter \(\theta\) in order to maximize the probability of observing the dataset \(\dset\).
+
+% Reformulation to introduce the NLL
+By concavity of the \(\log\) function, and since the observations are assumed to be \gls{iid}, this is equivalent to minimizing the so-called \gls{nll} function:
+\begin{eqnarray}
+    \LossFunc[\dset]{\theta}
+    & = & -\sum_{i=1}^N \log{\prob{\X_i=\x_i \given \Theta = \theta}}
+\end{eqnarray}
+Therefore, \(\hat{\theta} = \argmin_{\theta} \LossFunc[\dset]{\theta}\).%
+\footnote{
+    The maximum likelihood estimation principle will be extended in \autoref{sec:implementing_dnns} and \autoref{def:NLL_loss}.
+}
+
+\subsection{Information Theory}
+% Entropy of a discrete law
+We now define some Information Theoretic quantities.
+An interested reader may refer to the book of Cover and Thomas~\cite{cover_elements_2006}.
+Let \(\Z \in \sensVarSet\) be a discrete random variable. 
+The \emph{entropy} of \(\Z\), denoted by \(\entrop{\Z}\), describes the uncertainty to guess the value of a realization of a discrete random variable \(\Z\). 
+It is formally defined by:
+\begin{equation}
+	\entrop{\Z} \eqdef -\sum_{\sensValue \in \sensVarSet}
+	\prob{\Z = \sensValue} \log_2\prob{\Z = \sensValue}.
+\end{equation}
+The latter definition can straightforwardly extend to the entropy of conditional random variables.
+Let \(\randVar{X} \in \mset{X}\) be a random variable and let \(\varObs{x} \in \mset{X}\), then:
+\begin{equation}
+    \label{eq:def_cond_entrop_x}
+	\entrop{\Z \given \X = \x} \eqdef -\sum_{\sensValue \in \sensVarSet}
+	\prob{\Z = \sensValue \given \X = \x} \log_2\prob{\Z = \sensValue \given \X = \x}.
+\end{equation}
+This value depends on the observation \(\x\), so we may generalize by defining the \emph{conditional entropy} of a discrete random variable \(\Z\) given another random variable \(\X\). 
+It is formally defined as:
+\begin{equation}
+	\entrop{\Z \given \X} \eqdef \esper[\X]{\entrop{\Z \given \X = \x}}.
+    \label{eq:def_cond_entrop}
+\end{equation}
+Informally, the conditional entropy quantifies the remaining uncertainty on the guess of \(\Z\) once \(\X\) is known.
+In the latter definitions, it is worth emphasizing that the random variables are implicitly assumed to be discrete.
+The extension to continuous variables would require a thorough discussion.
+Nevertheless, despite some random variables observed in this thesis are continuous, their measure remains always discrete, so such a discussion can be still avoided here.
+
+If \(\probDist{P}\) and \(\probDist{Q}\) are two probability distributions on \(\sensVarSet\), we define the \gls{kld} divergence as:
+\begin{equation}
+	\KLdiv{\probDist{P}}{\probDist{Q}} \eqdef \sum_{\sensValue \in \sensVarSet}
+	\probDist{P}(\sensValue) \log_2\frac{\probDist{P}(\sensValue)}{\probDist{Q}(\sensValue)}.
+\end{equation}
+This quantity is typically used to measure the difference between two discrete probability distributions, since it is always non-negative and equals zero \gls{iff} \(\probDist{P} = \probDist{Q}\).
+Thanks to the previous definitions, we can introduce the \gls{mi} between two variables \(\Z\) and \(\X\) as:
+\begin{equation}
+    \MI{\Z}{\X} \eqdef \entrop{\Z} - \entrop{\Z \given \X} = 
+    \KLdiv{\prob{\X, \Z}}{\prob{\X} \prob{\Z}}.
+    \label{eq:def_MI}
+\end{equation}
+This characterizes how much information can be obtained about \(\Z\) by observing \(\X\).
+
+% Central-Limit theorem, application to Monte-Carlo methods
+\subsection{Monte-Carlo Methods}
+\label{sec:monte-carlo}
+In \autoref{sec:simus}, we will be interested in computing the \gls{mi} between a discrete random variable \(\Z\) denoting a random secret byte, and a continuous random vector \(\XXX\), denoting the time series of a physical measurement.
+In this context, we assume to know the generative \gls{pdf} \(\prob{\XXX \given \Z}\).
+According to \autoref{eq:def_MI}, computing the \gls{mi} is equivalent to computing \(\entrop{\Z}\) and \(\entrop{\Z \given \XXX}\).
+The former term is straightforward to compute, since in this thesis \(\Z\) will always be assumed to follow a uniform discrete law over \(2^n\) values, hence \(\entrop{\Z} = n\).
+However, \autoref{eq:def_cond_entrop} tells us that computing the conditional entropy term \(\entrop{\Z \given \XXX}\) involves a \(\traceLength\)-dimensional integral, where \(\traceLength\) is the dimensionality of the random vector \(\XXX\).
+Therefore, it is likely to be intractable.
+Hopefully, the conditional entropy term may still be efficiently estimated by the so-called \emph{Monte-Carlo} \gls{stochastic} method.
+The idea is to replace the expected value in \autoref{eq:def_cond_entrop} by an empirical mean based on the random draw of a dataset \(\dset=\{\xxx_1, \ldots, \xxx_N\}\):
+\begin{equation}
+    \entrop{\Z \given \XXX} \approx \overline{\randVar{H}}_N \eqdef \frac{1}{N} \sum_{i=1}^N \entrop{\Z \given \XXX = \xxx_i}.
+\end{equation}
+We have said that the empirical mean was an optimal estimator of an expected value, since it is unbiased, and its variance is minimal among every possible estimator of the expected value based on a dataset of \(N\) observations.
+But more interestingly, the \emph{Central Limit Theorem}~\cite[Thm.~15.37]{klenke2013probability} states that this estimation is \gls{consistent}, that is, 
+\(\overline{\randVar{H}}_N \lawConv{N} \entrop{\Z \given \X}\), with a convergence speed of \(\mathcal{O}\left(\frac{1}{\sqrt{N}}\right)\).
+This leads to \autoref{alg:entrop_MC}, describing the way the mutual information can be estimated.%
+\footnote{
+    \autoref{alg:entrop_MC} will be used in \autoref{sec:simus}.
+}
+\begin{algorithm}
+    \caption{Conditional entropy estimation with Monte-Carlo method}
+    \label{alg:entrop_MC}
+    \begin{algorithmic}
+        \Require \(N \in \natSet^*\), \(\$\): \gls{prng}
+        \Ensure \(\overline{\randVar{H}}_N \lawConv{} \entrop{\Z \given \XXX}\)
+        \For{\(i \gets 1\) to \(N\)}
+            \State \(\z \gets \$(\Z)\)
+            \State \(\x \gets \$\left(\X \given \Z = \z\right)\)
+            \Comment{Draws a random observation \(\x\)}
+            \For{\(\sensValue \in \sensVarSet\)}
+                \State \(\verb+tab_P+[\sensValue] \gets \prob{\X=\x \given \Z = \sensValue}\)
+                \Comment{Compute the likelihood given \(\x\)}
+            \EndFor
+            \State \(\verb+tab_P+ \gets\verb+normDist+(\verb+tab_P+)\)
+            \Comment{Normalizes by computing~\eqref{eq:bayes_thm}}
+            \State \(\verb+tab_H+ \gets \verb+computeH+(\verb+tab_P+)\)
+            \Comment{Computes the entropy with~\eqref{eq:def_cond_entrop_x}}
+            \State \(\overline{\randVar{H}}_N \gets \verb+RunningMean+(\verb+tab_H+)\)
+            \Comment{Averages to estimate~\eqref{eq:def_cond_entrop}}
+        \EndFor
+    \end{algorithmic}
+\end{algorithm}

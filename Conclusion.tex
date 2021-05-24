@@ -1,0 +1,110 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%								CONCLUSION									   %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\chapter{Conclusion \& Perspectives}
+
+It is now time to conclude this thesis whose aim was to push the limits of the understanding of deep learning for side-channel analysis.
+Hereafter, we propose a summary of the works and contributions proposed so far, and we recall to what extent they address the issues raised at the end of \autoref{chap:machine_learning}.
+Then, we propose some perspectives, including the description of some seminal works we started during this thesis.
+
+\section{Summary of the Contributions}
+	After having presented the general framework of side-channel analysis in \autoref{chap:sca}, we have formalized the use of machine learning in \gls{sca} in \autoref{chap:machine_learning}.
+	Training a model to approximate a true \gls{pmf} can be seen as solving an optimization problem.
+	More precisely, it consists in selecting from an hypothesis class \(\hypoclass\) the model \(\MLmodel\) that fits \emph{the most} with a target function \(\MLmodel^\star\), thanks to some pairs of inputs/outputs of the target function, acquired during the profiling phase.
+	Here the target function is a conditional \gls{pmf} used to feed a distinguisher whose aim is to recover a chunk of secret key.
+	\autoref{chap:machine_learning} has reviewed the different advantages and drawbacks of the use of \gls{ml}, and more particularly the use of \gls{dl} for \gls{sca}.
+	Those observations have lead to raise some issues, summarized at the conclusion of \autoref{chap:machine_learning}.
+
+	% Chap.5 summary
+	The first issue concerned the meaning behind the term ``the most'' in the previous paragraph.
+	More precisely, it concerns the choice of the loss function quantifying the dissimilarity between the output of a model to learn, and the outputs expected for the optimal model \(\MLmodel^\star\).
+	In particular, what could be the meaning of this loss function, from an \gls{sca} point of view?
+	Those are the questions addressed by \autoref{chap:ches_20}.
+	We showed that one of the most widely used loss function, namely the \gls{nll}, could be used to quantify the quality of the trained model during the attack phase, therefore bridging the gap between the \gls{ml} metrics and the \gls{sca} ones, emphasized first by Cagli \etal{}~\cite{cagli_convolutional_2017} and Picek \etal{}~\cite{picek_curse_2019}.
+	As a concrete application of our results, it is possible to estimate the efficiency of a key recovery based on the values of the loss function reached at the end of the profiling phase, without having to perform the key recovery as itself.
+	Moreover, we showed that this approach is sound no matter the nature of the counter-measure used to protect the target implementation.
+	Altogether, this study has paved the way towards a better theoretical understanding of \gls{dl} for \gls{sca}.
+
+	% Chap.6 summary
+	\autoref{chap:dl_sca_practice} provided insights from an evaluation of a software device protected with the code polymorphism counter-measure.
+	From a developer's point-of-view, it demonstrated the necessity to adapt the configuration of the random code generators \aka{} \glspl{sgpc} in order to improve the efficiency of the counter-measure against more sophisticated attacks, \eg{}, based on deep learning.
+	From an evaluator's point-of-view, it emphasized the fact that highly complex \gls{dnn} architectures with many layers and numerous parameters to fit is not always necessary in \gls{sca}, since simpler architectures such as the one suggested in this work remained sound against traces 32 times larger than what has been tackled so far with deep learning.
+	Although the works presented in \autoref{chap:dl_sca_practice} represent a case study rather than a coprehensive one, we hope that it will trigger more thorough discussions about the common belief that complex \gls{dnn} architectures would be necessary to tackle a \gls{dl}-based \gls{sca} evaluation.
+	Likewise, a natural extension of our works here woul be to investigate the case of large-scale \gls{sca} traces on implementations not only protected by hiding, but also protected with secret-sharing.
+
+	% Chap.7 summary
+	Finally, \autoref{chap:gradient_viz} has proposed a method called Gradient Visualization which can be used to localize Points of Interest.
+	This method opens the black-box of deep learning models, making their decisions more transparent in an \gls{sca} context.
+	We have shown that this method, requiring a negligible runtime overhead with respect to the one required during the profiling phase, is not particularly dependent on the nature of the counter-measures used to protect a target implementation, as long as the underlying \gls{dl} model is itself robust to the particular counter-measure.
+	Moreover, the characterization can be done for each trace separately, which may be of particular interest when drawing a precise diagnosis.
+	We have illustrated the relevance of the method on several datasets, and shown of it can be used to identify the origin of the vulnerability in the source code.
+	An automatization of the vulnerability detection, built on a \gls{dl}-based characterization method such as \gls{gv}, thereby extending the recent works of Burzstein \etal{}, could be a promising step forward.
+
+\section{New Tracks of Research in \texorpdfstring{\gls{dl}}{DL}-based \texorpdfstring{\gls{sca}}{SCA}}
+	We have recalled in \autoref{chap:machine_learning} that \glspl{dnn} are particularly interesting in \gls{sca} since they are universal enough to be able to circumvent any counter-measure investigated so far.
+	Actually, Bronchain \etal{} emphasized an intriguing difficulty of \gls{dl}-based \gls{sca} in a paper at \textsc{Ches} 2020: they show through simulated experiments that \glspl{mlp} encounter difficulties to learn a leakage spanned by an affine secret-sharing scheme, although some of the shares are not noisy.
+	This demonstration is a side experiment of a more general study of a new public dataset which will be soon released by the \gls{anssi},%
+	\footnote{
+		The database will be hosted on the \url{data.gouv.fr} platform.
+	}
+	gathering traces acquired on an \gls{mcu} protected with an affine secret-sharing scheme -- see \autoref{sec:masking}.
+	Bronchain \etal{} conclude their paper with this challenge to the proponents of deep learning in \gls{sca}.
+	\begin{quotation}
+		Learning this field multiplication in a fully automated manner appears to be a challenging task for existing \gls{ml} / \gls{dl} tools (besides being a waste since this part of the attack is trivial to perform manually) [\ldots].
+		Concretely, we believe our work at least states an interesting challenge to \gls{ml} / \gls{dl} research: can the \gls{anssi} implementation be broken [with \gls{dl}] [\ldots] with similar time complexities and profiling efforts as [their \gls{gta}-based attacks]?~\cite{bronchain_dissection_2020}
+	\end{quotation}
+	We fully agree with this point of view: it seems obvious that expecting a \gls{dnn} model to learn how to recombine the informative leakages of several shares is a waste since the nature of the scheme is often known in a profiling attack, according to the Kerckhoff's principle.
+	That is why Bronchain \etal{} could emphasize a simple but efficient attack based on \glspl{gta}, by leveraging all the knowledge about the implementation.
+	Nevertheless, their proposal implicitly requires additionally to know the values of the random shares used in the secret-sharing scheme during the profiling phase.
+	Most of the time in practical evaluations, this cannot always be assumed, since the developers are rarely willing to give the access to the output of the \gls{prng}.
+	This is somehow formalized for example by the model threat proposed by Hoang \etal{} at \textsc{Ches} 2020~\cite[Sec.~4.2.1]{hoang_plaintext_2020}.
+	Thus, there is a gap between efficient attacks in a worst-case-yet-sometimes-unrealistic scenario -- mostly useful from a theoretical point-of-view \eg{} to discuss the generic soundness of a counter-measure -- and automated attacks in a more realistic scenario, which is more relevant for practical evaluations -- \eg{} useful to evaluate the robustness of a particular implementation.
+	I, for one, think that \gls{dl} may still bring relevant contributions in the latter case, thereby bridging the gap between both scenarios.
+	Hereafter, we propose two main tracks of practical improvements we wish we had time to more deeply explore through this thesis.
+
+	\subsection{Discrete Convolution Layers}
+		We have seen through \autoref{eq:conv_masking} that the conditional \gls{pmf} of a sensitive random variable protected with a \(\order\)-th order Boolean scheme could be rephrased as a discrete convolution product with respect to the additive group \((\gf{2}{8}, \plusgf)\): 
+		\begin{equation}
+			\MLmodel^\star(\xxx) = \prob{\Z \given \XXX = \xxx}: \sensValue \mapsto  (h_0 \conv h_1 \conv \cdots \conv h_\order)(\sensValue) \enspace ,
+		\end{equation}
+		where the \(h_i = \prob{\Z_i \given \XXX = \xxx}\) are the conditional \glspl{pmf} of each share \(\Z_i\) separately.
+		Through this thesis, we have recalled that the profiling phase consisted in substituting the optimal model \(\MLmodel^\star\) by another one \(\MLmodel(\cdot; \MLparam)\) whose parameters \(\MLparam\) are adjusted during the profiling phase.
+		This formulation implies that the attacker must jointly learn not only the leakage models of each share individually but also the way those functions are then recombined to give \(\MLmodel^\star\).
+
+		Since the secret-sharing scheme can be assumed to be known by the attacker/evaluator, our proposal would be to directly encode it in the \gls{dnn}.
+		In other words, we might substitute the learning of \(\MLmodel(\cdot, \MLparam)\) with the \emph{joint} learning of elementary models \(\widetilde{\MLmodel}(\cdot, \MLparam_i): \leakSpace \rightarrow \probSet{\sensVarSet}\), such that:
+		\begin{equation}
+			\MLmodel(\cdot; \MLparam) = \widetilde{\MLmodel}(\cdot; \MLparam_0) \conv \widetilde{\MLmodel}(\cdot; \MLparam_1) \conv \ldots \conv \widetilde{\MLmodel}(\cdot; \MLparam_\order) \enspace ,
+		\end{equation}
+		where \(\MLparam = \left(\MLparam_0, \MLparam_1, \ldots, \MLparam_\order \right)^\intercal\).
+		Here, each elementary model \(\widetilde{\MLmodel}(\cdot, \MLparam_i)\) would approximate the true leakage \(h_i\) of each share \(\Z_i\).
+		By ``joint learning'', we mean that we would still use the values of the sensitive target variable \(\Z\) as labels during for the training, whereas Bronchain \etal{} trained their elementary leakage models \emph{independently} from each other, \ie{}, by using the values of the random shares \(\Z_i\) as labels, which we previously claimed to be hardly feasible in practical evaluations.
+
+		Through this new formulation, although the leakage models of each share must still be jointly learned by the attacker, the specific learning of the recombination of the different shares' leakage model could be spared.
+		This would still be harder than independently learning the different elementary leakage models, but would represent a good balance between the assumptions made in academic works and those made in industrial applications.
+
+		Moreover, this trick could be extended to any group-based secret-sharing scheme, so the difficulty of learning would not depend anymore on the nature of the scheme.
+		Hence, the difficulty to learn the field multiplication raised by Bronchain \etal{}~\cite{bronchain_dissection_2020} could be circumvented, while not requiring too much unrealistic assumptions in the threat model in practice.
+
+	\subsection{Extending and Generalizing Multi-Task Learning}
+		Maghrebi recently proposed the so-called \emph{multi-labeling} technique -- \aka{} multi-task learning, see \autoref{sec:multi-task} -- in order to target several intermediate sensitive computations at once~\cite{maghrebi_deep_2020}.
+		However, they claim that their solution only works practically for at most two target variables simultaneously.
+
+		During the evaluation of code polymorphism, we have also tested a multi-task learning methodology which is not limited to such a low number of target variables.
+		As an example, we have been able to target the 16 output bytes of the \ark{} operation at once during the evaluation of both \mbedTLS{} and \aeshuitbit{} implementations.
+		Not only the architecture used is able to better leverage the computation capacities of a \gls{gpu} by running more operations in parallel, but the similarities between the targeted leakages allows to put some of the first layers of the 16 corresponding \glspl{cnn} in common, into a so-called \emph{stem} block.
+		The spare in the number of parameters can be seen as a way to regularize the training of \gls{dl} models, by decreasing the ratio between the number of parameters to adjust and the number of labels to predict.
+		The \gls{sca} framework is particularly adapted to multi-task learning, since there are many intermediate sensitive computations, yielding similar leakage behavior, that the attacker could target at once.
+
+		This could be particularly helpful when tackling the profiling of an implementation protected with secret-sharing.
+		Indeed, most of these implementations may use the same random share to protect many sensitive intermediate computations.
+		As an example, in the \gls{ascad} dataset, the same random share \(\rout\) is used to protect all the output bytes of the \sub{} operation.
+		Whereas targeting only one byte -- \eg{} the first one -- would require a \gls{dl} model to localize two intermediate computations, \ie{} both \(\Sbox[\p_0 \plusgf \key_0] \plusgf \rout\) and \(\rout\), targeting at the same time the 16 output bytes would actually require to localize 17 intermediate operations, \ie{} the \(\Sbox[\p_i \plusgf \key_i] \plusgf \rout\) for \(0 \leq i \leq 15\) and \(\rout\).
+		In other words, the ratio between the number of labels carrying information to feed the training and the number of intermediate computations to localize would increase from \(\frac{1}{2}\) to \(\frac{16}{17} \approx 0.94\).
+		Intuitively, we expect this trick to make the learning procedure more efficient.
+
+
+	\subsection{Final Word}
+		We hope that the works presented in this thesis will be of great interest for the \gls{sca} community, in order to better understand the way how \gls{dl}-aided \gls{sca} works, while bringing more trust in this approach.
+		The contributions presented so far intended to be not only theoretical, but also practical, and can be easily implemented in the whole workflow of \gls{dl}-based \gls{sca} for security evaluations.
+		Finally, we hope that the last two tracks of research, will give the members of the \gls{sca} community some inspiration to guide their future work towards better embracing the full potential of \gls{dl} in their evaluations.

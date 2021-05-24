@@ -1,0 +1,48 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%                       CONSISTENCY                                            %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+This subsection is devoted to recall to the unfamiliar reader some of the important machine learning notions which will be used afterwards in \autoref{sec:PI}. 
+In particular, the \gls{nll} loss minimization is asymptotically equivalent to the minimization of the cross entropy. 
+We start by recalling those notions hereafter.
+\begin{definition}[Negative Log Likelihood]
+    Given \(\trainSet =  \{(\xxx_1, \z_1), \ldots, (\xxx_{\numTracesProf}, \z_{\numTracesProf})\}\), and a model \(\MLmodel: \leakSpace \rightarrow \probSet{\sensVarSet}\), the \glsfirst{nll}%
+    \footnote{
+        The \gls{nll} has already been introduced in \autoref{sec:probas}.
+    }
+    is defined as:
+    \begin{equation}
+        \LossFunc[\trainSet]{\MLmodel} \eqdef \frac{1}{\card{\trainSet}}\sum_{(\xxx, \z) \in \trainSet}
+        - \log_2 \MLmodel(\xxx)[\z] \enspace .
+        \label{eq:NLL}
+    \end{equation}
+    Furthermore, we define the \emph{maximum likelihood estimator}%
+    \footnote{
+        Minimizing the \gls{nll} loss is equivalent to maximizing the Log Likelihood.
+    } 
+    \(\MLmodelMLE{\trainSet}\) as the model from \(\hypoclass\) that minimizes the \gls{nll} loss computed over the profiling set \(\trainSet\): \(\MLmodelMLE{\trainSet} \eqdef \argmin_{\MLmodel \in \hypoclass} \LossFunc[\trainSet]{\MLmodel}.\)
+    \label{def:NLL_loss}
+\end{definition}
+
+\begin{definition}[Cross Entropy]
+    Given a joint probability distribution of a target sensitive variable \(\Z\) and its leakage \(\XXX\) denoted as \(\prob{\XXX, \Z}\), we define the \emph{cross entropy} as the expected value of each term in~\autoref{eq:NLL}: 
+    \begin{equation}
+        \LossFunc[\XXX, \Z]{\MLmodel} \eqdef
+        \esper[\XXX, \Z]{-\log_2 \MLmodel(\XXX)[\Z]} \enspace .
+        \label{eq:general_loss}
+    \end{equation}
+    \label{def:Xent}
+\end{definition}
+% Link between NLL and Xent
+The cross entropy is actually nothing but the expected value of the \gls{nll} loss computed over the profiling set of traces.
+Besides, according to the law of large numbers, for any fixed \(\MLmodel\) the \gls{nll} loss converges in probabilities towards the cross entropy~\cite{shalev-shwartz_understanding_2014}.
+However, since the true joint distribution of \(\Z\) and \(\XXX\) is actually unknown, one cannot exactly compute the cross entropy.
+The hope behind the \gls{nll} minimization is that for a number \(\numTracesProf\) of profiling traces high enough, the obtained maximum likelihood estimator \(\MLmodelMLE{\trainSet}\) will be a good candidate to minimize the cross entropy.
+
+% Non trivial consistency
+It is not trivial though that \(\LossFunc[\trainSet]{\MLmodelMLE{\trainSet}}\) converges in probabilities towards the minimal cross entropy, as \(\MLmodelMLE{\trainSet}\) is varying for each value of \(\numTracesProf\).
+Actually, the Cramer-Rao bound, a well known result in Statistics~\cite{cramer_mathematical_1999}, guarantees the latter convergence, but relies on assumptions that cannot be taken for granted, in particular the assumption that \(\prob{\Z | \XXX} \in \hypoclass\).
+
+% Consequences of the fundamental machine learning theorem
+Thankfully, as a consequence of \autoref{thm:consistency} introduced in \autoref{chap:machine_learning}, we are indeed ensured that \(\LossFunc[\trainSet]{\MLmodelMLE{\trainSet}} \probConv{\card{\trainSet}} \min_{\MLmodel \in \hypoclass} \LossFunc[\XXX, \Z]{\MLmodel}\).
+Therefore when the number of profiling traces converges towards infinity, we can substitute the analysis of the \gls{nll} loss with that of the cross entropy. 
+It remains now to draw the link between cross entropy and \gls{pi}, in order to address the Leakage Assessment Problem -- \ie{} \autoref{leak_assess}.

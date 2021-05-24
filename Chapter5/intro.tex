@@ -1,0 +1,33 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%								INTRO CHAPTER 5             				   %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+The work presented in this chapter aims at grounding the use of \glspl{dnn} in the \gls{sca} context, especially when classical counter-measures like secret-sharing and hiding are involved. 
+In this chapter, we investigate to what extent the profiled \gls{sca} optimization problem -- \ie{} \autoref{final_task_prof} -- can be solved through the machine learning framework by carefully choosing the underlying loss function.
+This is the main problem addressed in this chapter.
+
+We propose a theoretical study of the \glsfirst{nll} loss in different steps depicted in \autoref{fig:diagram_intro}, by enlightening the fact that such a function is strongly linked to a side-channel information theoretic quantity called \gls{pi}, formally introduced by Renauld \etal{} at \textsc{Eurocrypt} 2011~\cite{renauld_formal_2011}, and recently studied by Bronchain \etal{} at \textsc{Crypto} 2019~\cite{bronchain_leakage_2019}.
+As a direct consequence, the \gls{pi} can be straightforwardly computed from the \gls{nll} loss.
+More interestingly, this implies that the training phase of a deep learning model, through the minimization of the \gls{nll} loss, is actually equivalent to giving the \gls{pi} estimation which is the closest to the \gls{mi} between the leakage and the target sensitive variable.
+
+In parallel, we benefit from the recent works of Chésirey \etal{} at \textsc{Ches} 2019~\cite{chesirey_best_2019}.
+The latter ones provide a lower bound of the optimal efficiency metric \(\numTracesAttackOpt(1, \beta)\) -- defined in \autoref{eq:eff_sr} -- depending on the \gls{mi}.
+By combining those two results and by translating them into the \gls{ml} terminology, we show that the \gls{sca} efficiency metric can be accurately estimated without even mounting a key recovery, which justifies the \emph{soundness} of the \gls{dl} approach when the latter one is addressed by training \glspl{dnn} through the minimization of the \gls{nll} loss.
+
+\begin{figure}[h]
+    \centering
+    \input{diagram_intro}
+    \caption{Link between the \gls{nll} loss and the efficiency metric in \gls{sca}.}
+    \label{fig:diagram_intro}
+\end{figure}
+
+As we shall show, the latter result has several direct impacts.
+First, the training of \glspl{dnn} with the \gls{nll} loss can be considered as an efficient and effective estimation of the \gls{pi}, and thereby of the \gls{mi} -- known to be complex to accurately estimate in the context of secure implementations~\cite{prouff_theoretical_2009,batina_mutual_2011}.
+Secondly, it implies that in an \gls{sca} context, choosing the \gls{nll} loss function to drive the training is sound when it comes to address the profiled \gls{sca} optimization problem.
+Thirdly, it enables to quantitatively study the impact of classical \gls{sca} counter-measures on the efficiency of deep learning based \gls{sca} and to formally verify that they stay sound.
+
+\paragraph{Outline.}
+The remaining of the chapter is organized as follows. 
+\autoref{sec:leakage_assess} proposes another way to tackle the evaluation by introducing the \emph{Leakage Assessment} problem.
+\autoref{sec:no_free_lunch} states the soundness of minimizing the \gls{nll} loss since it is nothing but maximizing the \gls{pi}.
+A discussion about the tightness of such a lower bound can be found in \autoref{sec:div_term}.
+The second part of the chapter is dedicated to the validation of our theoretical results through several simulations in \autoref{sec:simus} and experiments presented in \autoref{sec:experiments}, in the context of implementations secured by secret-sharing, shuffling and de-synchronization.

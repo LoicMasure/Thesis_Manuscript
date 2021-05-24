@@ -1,0 +1,108 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% 									CHARACTERIZATION 						   %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+So far, we have seen that to emulate a sound attacker \(\attacker\) in order to evaluate a target, one must get an estimation of the conditional \gls{pmf} \(\prob{\Z \given \XXX}\).
+This can be done either manually by the attacker thanks to the preliminary knowledge of the target behavior, or thanks to measured leakages during a preliminary characterization phase.
+The problem of estimating the latter conditional \gls{pmf} \(\prob{\Z \given \XXX = \xxx}\) based on measured data \(\xxx\) is 
+singular for two reasons.
+
+On the one hand, \gls{sca} traces depict physical quantities varying through the time.
+By definition, these can be seen as continuous functions of the time, so they cannot be perfectly measured through the acquisition.
+A high-sampling rate oscilloscope can nevertheless discretize this signal with high fidelity, but at the cost of high dimensionality in the traces, ranging from several hundreds to several millions of samples, depending on the target implementation.
+This feature yields technical challenges concerning the use of some estimation algorithms.
+As an example, naively applying Gaussian \gls{ta} on the raw traces of length \(\traceLength\) would require to estimate the \(\mathcal{O}(\traceLength^2)\) coefficients of the covariance matrices.
+Hence, such a leakage model poorly scales when increasing the dimensionality of the traces.
+
+On the other hand, in our cryptographic contexts, the relevant informative leakage is empirically known to be only localized in few time samples, the so-called \glspl{poi}.
+By relevant, we mean that those \glspl{poi} statistically depend -- independently or jointly -- on a sensitive variable, as formally stated by the following assumption.
+\begin{assum}[Sparsity]\label{assum:sparsity}
+	There only exists a small set of coordinates 
+	\(\infoCoord \eqdef \left\{t_1, \ldots, t_{\nbInfoCoord} \given \nbInfoCoord \ll \traceLength \right\}\)
+	such that 
+	\(\prob{\Z | \XXX} = \prob{\Z \given \XXX \left[t_1\right], \ldots, \XXX \left[t_{\nbInfoCoord}\right]}\).
+\end{assum}
+That is why it is worth considering methods able to target those \glspl{poi}.
+Not only, from an attacker's point of view, it enables to reduce the attack complexity by decreasing the dimensionality of the input traces, while keeping enough exploitable information to enable an attack to succeed.
+But also, by identifying the precise time samples where the informative leakage occurs, it allows an evaluator or a developer to guess the origin of the vulnerability, whether it comes from an element in a hardware circuit, or from a particular instruction in the assembly code for software implementations.
+In a sense, it helps to build a full diagnosis of the target device weaknesses.
+
+There are two ways to proceed a dimensionality reduction.
+Either one may try to directly localize the \glspl{poi}, thanks to some tools exploiting the statistical dependencies of the trace at the informative time samples -- detailed in the next section.
+Or one may use standard data compression techniques, such as \gls{pca}~\cite{cagli_enhancing_2016,standaert_using_2008,eisenbarth_building_2010,choudary_efficient_2014,choudary_efficient_2015}, \gls{kda}~\cite{cagli_kernel_2017}, \gls{dft} or wavelet-based signal decomposition~\cite{destouet_wavelet_2020}.
+Contrary to the former way, the latter one does not enable to localize the \glspl{poi}.
+Hereafter, we propose an overview of the former way, especially since it will be used as a benchmark in \autoref{sec:related_works}.
+
+\subsection{Research of Points of Interest}
+\label{sec:PoIs}
+In this section we present some basic tools, able to emphasize \glspl{poi} in the traces.
+We recalled in \autoref{sec:cpa} that some non-profiled leakage models rely on a deterministic function \(\varphi\) of the sensitive variable, which coincides with statistical moments of the traces on the specific time coordinate where the leakage occurs.
+This is somehow a first method emphasizing \glspl{poi}.
+That is why assessing similarly statistical hypothesis tests on those samples can make a discrepancy between uninformative time samples and informative ones.
+We detail hereafter two ways to implement this idea.
+
+\paragraph{T-test.}
+The T-test characterization~\cite{mather_does_2013} is based on the eponymous statistical test.
+Its idea is to gather a profiling set into two classes: one, denoted by \(\dset_A\) of size \(n_A\), with a same fixed sensitive value \(\z_A\), and another, denoted by \(\dset_B\) of size \(n_B\) with random sensitive values.
+The T-test assesses whether the two datasets share the same expected value or not.
+To this end, a \emph{T-statistic} is computed according to \autoref{eq:t-test}, for each time sample of the traces:
+\begin{equation}
+    T[t] = \frac{\overline{\X_A}[t] - \overline{\X_B}[t]}{\sqrt{\frac{S_A^2[t]}{n_A}+\frac{S_B^2[t]}{n_B}}} \enspace ,
+    \label{eq:t-test}
+\end{equation}
+where \(\overline{\X_A}[t]\) (resp.\,\(\overline{\X_B}[t]\)) denotes the empirical mean and \(S_A^2[t]\) (resp.\,\(S_B^2[t]\)) denotes the empirical variance of the traces from \(\dset_A\) (resp.\,\(\dset_B\)) at a given time coordinate \(t\) -- see \autoref{sec:probas}.
+Therefore, it outputs a characterization vector of the same dimensionality of that of the input traces, namely \(\traceLength\).
+
+If a time coordinate \(t\) does carry informative leakage, then there is at least one value \(\sensValue \in \sensVarSet\) of the sensitive variable \(\Z\) such that the probability distribution \(\prob{\XXX[t] \given \Z = \sensValue}\) would differ from \(\prob{\XXX[t]}\).
+Therefore, it is likely that the expected values of the corresponding \glspl{pdf}, namely \(\esper{\XXX[t] \given \Z = \sensValue}\) and \(\esper{\XXX[t]}\) are significantly different, hence a T-statistic significantly different from 0.%
+\footnote{The T-statistic should be typically higher than \(4.5\).}
+That is why such a test should reveal a vector emphasizing \glspl{poi} at the time samples where some informative leakage is carried.
+Moreover, according to \autoref{assum:sparsity}, this vector should be \gls{sparse}.
+An example of leakage characterization with a T-test is given in \autoref{fig:charac_ascad_t_test}.
+
+However, depending on the true leakage model, not all values \(\sensValue \in \sensVarSet\) may yield a significant T-statistic.
+To circumvent this issue, the T-statistic may be averaged over the set \(\sensVarSet\) of all possible values that \(\Z\) may take.
+Likewise, the \glspl{pdf} \(\prob{\XXX[t] \given \Z = \sensValue}\) and \(\prob{\XXX[t]}\) being different does not necessarily mean that their corresponding expected values also differ.
+This particularly happens when facing protected implementations, where the discriminative part of the leakage occurs in higher-order statistical moments.%
+\footnote{
+	This will be discussed in \autoref{sec:counter-measures}.
+}
+To circumvent this issue, Standaert suggested at \textsc{Cardis}'18 to replace \(\X_A[t]\) \Big(resp.\,\(\X_B[t]\)\Big) with \(\left(\X_A[t] - \overline{\X_A}[t]\right)^\order\) \Big(resp.\,\(\left(\X_B[t] - \overline{\X_B}[t]\right)^\order\)\Big), for a given \(\order > 1\).
+
+
+\paragraph{Signal-to-Noise Ratio.}
+The \gls{snr} follows roughly the same idea.
+For each time sample \(t\), the following statistic is estimated:
+\begin{eqnarray}
+	\SNR[t] & \eqdef & 
+	\frac{\var[\Z]{\esper{\XXX[t]| \Z = \sensValue}}}
+	{\esper[\Z]{\var[]{\XXX[t] | \Z = \sensValue}}} \enspace ,
+	\label{eq:SNR}
+\end{eqnarray}
+where the numerator denotes the signal magnitude and the denominator denotes the noise magnitude estimate.
+Like the T-test, provided that a time coordinate does carry some informative leakage, the deterministic part \(\esper{\XXX[t]| \Z = \sensValue}\) should not be constant with \(\sensValue\), hence a non-zero variance, and thereby a non-zero \gls{snr} when the latter one is computed at an informative time coordinate.
+It is noticeable here that the denominator does not bring more information concerning the relevance of a time coordinate, but only scales the leakage characterization vector with the noise amplitude of the traces.
+This is then particularly useful when one wants to compare the relevance between several informative time coordinates.%
+\footnote{
+	Provided that those time coordinates carry the same redundant information about the sensitive variable.
+}
+Nevertheless, although requiring more traces to draw significant conclusions from the \gls{snr} than from a T-test, the former one does not depend on the choice of the the sets of traces to statistically compare~\cite{standaert_welch_2018}.
+The interested reader may refer to see~\cite[Sec.~4.3.2]{mangard_power_2007} for more details on its application in the SCA context.
+
+
+\paragraph{Characterization of Multi-Variate Leakages}
+The \gls{snr} characterization techniques we have presented so far work in the case of uni-variate leakage, that is, when the marginal \gls{pdf} of \(\X[t]\), for a given time coordinate \(t \in \llbracket 1, \traceLength \rrbracket\), depends on the sensitive variable \(\Z\).
+Therefore, both characterization techniques are able to emphasize all the \glspl{poi} verifying the preceding property.
+However, for some more complex leakage models, some time coordinates may still carry some information about the sensitive variable, \ie{}, \(\prob{\XXX[t_1], \XXX[t_2] \given \Z = \sensValue}\) is non-constant with respect to \(\sensValue \in \sensVarSet\);
+although their respective marginal \glspl{pdf}, namely \(\prob{\XXX[t_1] \given \Z = \sensValue}\) and \(\prob{\XXX[t_2] \given \Z = \sensValue}\) remain constant with respect to \(\sensValue\).
+Such leakage models are called \emph{multi-variate} to emphasize the fact that several time coordinates must be jointly considered to find a dependency with the sensitive variable \(\Z\).
+Those leakage models are widely met with protected implementations -- see \autoref{sec:counter-measures}.
+
+To deal with the statistically based characterization methods, it is possible to use a pre-processing step of the traces.
+It consists in building a new pre-processed trace \(\XXX'\), computed thanks to a so-called \emph{re-combination} function \(\varepsilon\) applied on each possible tuple of a given size \(q\) of time coordinates from the trace, \ie{}, 
+\begin{equation}
+	\XXX'[t_1, t_2, \ldots, t_q] = \fonction{\varepsilon}{\XXX[t_1], \XXX[t_2], \ldots \XXX[t_q]} \enspace , t_1, t_2, \ldots, t_q \in \llbracket 1, \traceLength \rrbracket \enspace .
+\end{equation}
+The hope is that, for a value of \(q\) high enough, the uni-variate statistical moments of the new trace \(\XXX'\) may contain new \glspl{poi} which would not be constant with respect to the sensitive variable \(\Z\).
+Prouff \etal{} have proposed sound recombination functions in the case of second order leakage models, \ie{}, when \(q=2\)~\cite{prouff_statistical_2009}.
+The drawback of this method is that it mechanically increases the dimensionality of the new trace \(\XXX'\) to \(\traceLength^q\) where \(\traceLength\) is the dimensionality of the original trace \(\XXX\).
+This limitation is critical, even for small values of \(q\), and is especially a cornerstone of the design of counter-measures by the developers.

@@ -1,0 +1,130 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%           THE LINK BETWEEN CROSS ENTROPY AND PERCEIVED INFORMATION           %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+This section aims at explaining to what extent the \gls{pi} and the cross entropy introduced in the previous section are linked. 
+It is argued here that the \gls{pi} actually equals the cross entropy up to constant factors.
+Such a link and the reduction argued in \autoref{sec:loss_func} will allow us to guarantee that minimizing the \gls{nll} loss is a consistent approach for solving the 
+Leakage Assessment Problem.
+It is recalled that the \gls{pi} has been formally defined in \autoref{sec:leakage_assess}.
+We also introduce hereafter the \emph{Empirical Perceived Information}, as given in~\cite{bronchain_leakage_2019}.
+\begin{definition}[Empirical Perceived Information~\cite{bronchain_leakage_2019}]
+    Let \(\MLmodel: \leakSpace \rightarrow \probSet{\sensVarSet}\).
+    The \emph{Empirical Perceived Information}, denoted as \(\estPI{\Z}{\XXX}{\MLmodel}{\trainSet}\), is defined from a profiling set \(\trainSet\) as follows:
+    \begin{equation}
+        \estPI{\Z}{\XXX}{\MLmodel}{\trainSet} \eqdef
+        \entrop{\Z} + \sum_{\sensValue \in \sensVarSet} 
+        \prob{\Z = \sensValue} \frac{1}{\card{\trainSet}}
+        \sum_{\substack{(\xxx, \z) \in \trainSet \\ \z = \sensValue}}
+        \log_2 \MLmodel(\xxx)[\z] \enspace .
+    \end{equation}
+    \label{def:ePI}
+\end{definition}
+Informally, the \gls{pi} is defined the same way as the \gls{mi}, but by substituting the \emph{uncertainty} of the true \gls{pmf}, namely \(\log_2 \prob{\Z \given \XXX=\xxx}\), with the uncertainty of the approximating \gls{pmf}, namely \(\log_2 \MLmodel(\XXX)\). 
+Surprisingly, this substitution is exactly what defines the cross entropy. 
+\begin{proposition}
+    \label{prop:PI_eq_gen_loss}
+    Let \(\Z\) be a random variable with uniform distribution over \(\sensVarSet\) of cardinal \(\card{\sensVarSet}\).
+    Then, the cross entropy and the \gls{nll} loss of a model \(\MLmodel \in \hypoclass\) are respectively linked to the \gls{pi} and its empirical estimation as follows:
+    \begin{eqnarray}
+        \label{eq:PI_eq_gen_loss}
+        \log_2{\card{\sensVarSet}} - \LossFunc[\XXX, \Z]{\MLmodel} & = & 
+        \PI{\Z}{\XXX}{\MLmodel} \enspace , \\
+        \label{eq:ePI_eq_NLL_loss}
+        \log_2{\card{\sensVarSet}} - \LossFunc[\trainSet]{\MLmodel} & = & 
+        \estPI{\Z}{\XXX}{\MLmodel}{\trainSet} \enspace .
+    \end{eqnarray}
+\end{proposition}
+\begin{proof}
+    The assumption about \(\Z\) implies that \(\entrop{\Z} = \log_2{\card{\sensVarSet}}\).
+    Injecting the latter result into the definition of the \gls{pi}, and by using the formula of total probabilities for the expected value we have:
+    \begin{eqnarray*}
+        \PI{\Z}{\XXX}{\MLmodel} & \eqdef & \entrop{\Z} +
+        \sum_{\sensValue \in \sensVarSet} \prob{\Z = \sensValue}
+        \esper[\XXX | \Z = \sensValue]{\log_2 \MLmodel(\XXX)[\sensValue]} \enspace , \\
+        & = & \log_2{\card{\sensVarSet}} + \esper[\Z]{\esper[\XXX | \Z]{\log_2\MLmodel(\XXX)[\Z]}} \enspace , \\
+        & = & \log_2{\card{\sensVarSet}} - \esper[\XXX,\Z]{-\log_2\MLmodel(\XXX)[\Z]} \enspace ,\\
+        & = & \log_2{\card{\sensVarSet}} - \LossFunc[\XXX, \Z]{\MLmodel} \enspace .
+    \end{eqnarray*}
+    The proof for the empirical \gls{pi} follows exactly the same reasoning substituting expected values with averages.%
+    \footnote{Actually, \autoref{eq:ePI_eq_NLL_loss} only holds if \(\trainSet\) is \emph{balanced}, \ie{} if the number of traces is the same for each class in \(\trainSet\). 
+    This can be assumed without loss of generality, since \(\Z\) is drawn uniformly.}
+\end{proof}
+
+\begin{figure}
+    \centering
+    \input{illustration_PI}
+    \caption{Illustration of \autoref{prop:PI_eq_gen_loss}.}
+    \label{fig:illustration_prop}
+\end{figure}
+
+\autoref{prop:PI_eq_gen_loss}, which is illustrated on \autoref{fig:illustration_prop}, tells us that the \gls{pi} can be expressed as a cross entropy, provided that the entropy of the sensitive variable \(\Z\) is known. 
+As already pointed out in~\cite[Thm.~6]{bronchain_leakage_2019}, for all \(\MLmodel \in \hypoclass\) we have \(\PI{\Z}{\XXX}{\MLmodel} \leq \MI{\Z}{\XXX}\).%
+\footnote{
+    This comes from the fact that the gap between the \gls{mi} and the \gls{pi} can be rephrased as a \gls{kld}-divergence term, which is always non-negative.
+}
+In other words, computing the cross entropy of any deep learning model enables to get a lower bound of the \gls{mi}. 
+This tells nothing about the tightness of such a bound yet.
+Hopefully, based on the previous results stated in this section, we now know how to tighten this inequality, as stated by the following proposition.
+\begin{proposition}
+    \label{prop:cor_sup_PI}
+    Let \(\trainSet\) be a profiling set and let \(\MLmodelMLE{\trainSet}\) be the maximum likelihood estimator, namely such that \(\MLmodelMLE{\trainSet} \eqdef \argmin_{\MLmodel \in \hypoclass} \LossFunc[\trainSet]{\MLmodel}\). 
+    Then: 
+    \begin{enumerate}
+        \item \(\MLmodelMLE{\trainSet}\) maximizes the empirical \gls{pi},
+        \item  the information perceived by \(\MLmodelMLE{\trainSet}\) converges in probabilities towards the maximum of \gls{pi} over \(\hypoclass\).
+    \end{enumerate}
+    \begin{eqnarray}
+        \label{eq:sup_ePI}
+        \estPI{\Z}{\XXX}{\MLmodelMLE{\trainSet}}{\trainSet} 
+        & \probConv{\card{\trainSet}} & 
+        \max_{\MLmodel \in \hypoclass} \PI{\Z}{\XXX}{\MLmodel} 
+        \leq \MI{\Z}{\XXX}\\
+        \label{eq:sup_PI}
+        \PI{\Z}{\XXX}{\MLmodelMLE{\trainSet}} & \probConv{\card{\trainSet}} &
+        \max_{\MLmodel \in \hypoclass} \PI{\Z}{\XXX}{\MLmodel} 
+        \leq \MI{\Z}{\XXX}
+    \end{eqnarray}
+\end{proposition}
+Roughly speaking, \autoref{prop:cor_sup_PI} states that  the \gls{nll} loss minimization is asymptotically equivalent to the \gls{pi} maximization mentioned in the Leakage Assessment Problem (\ie{} \autoref{leak_assess}).
+\begin{proof}
+    Starting from \autoref{eq:PI_eq_gen_loss}, and applying \autoref{eq:consist1} from \autoref{thm:consistency} to get
+    \begin{eqnarray*}
+        \log_2{\card{\sensVarSet}} - \PI{\Z}{\XXX}{\MLmodelMLE{\trainSet}} \overset{\mbox{\tiny\eqref{eq:PI_eq_gen_loss}}}{=} \LossFunc[\XXX, \Z]{\MLmodelMLE{\trainSet}}
+        & \overset{\mbox{\tiny\eqref{eq:consist1}}}{\probConv{\card{\trainSet}}} &
+        \min_{\MLmodel \in \hypoclass} \LossFunc[\XXX, \Z]{\MLmodel} \\
+        & = & \min_{\MLmodel \in \hypoclass} \left(\log_2{\card{\sensVarSet}} - \PI{\Z}{\XXX}{\MLmodel}\right) \\
+        & = & \log_2{\card{\sensVarSet}} - \max_{\MLmodel \in \hypoclass} \PI{\Z}{\XXX}{\MLmodel}
+    \end{eqnarray*}
+    Hence the result given in \autoref{eq:sup_PI}. 
+    The proof for \autoref{eq:sup_ePI} follows exactly the same reasoning, replacing \(\PI{\Z}{\XXX}{\MLmodelMLE{\trainSet}}\) by \(\estPI{\Z}{\XXX}{\MLmodelMLE{\trainSet}}{\trainSet}\), and applying \autoref{eq:consist2} instead of \autoref{eq:consist1}.
+\end{proof}
+
+Therefore, on the one hand, we have a theoretically grounded method to address the Leakage Assessment Problem (\ie{} \autoref{leak_assess}) thanks to \autoref{prop:cor_sup_PI}, namely by minimizing the \gls{nll} loss.
+On the other hand, since it has been argued in \autoref{sec:leakage_assess} that solving the Leakage Assessment was sound in order to address the SCA Optimization Problem, it follows from \autoref{prop:cor_sup_PI} the main result of this chapter, given hereafter.
+\begin{corollary}[Main Result]
+    \label{cor:main_result}
+    Let \(\MLmodelMLE{\trainSet}\) be the maximum likelihood estimator with respect to the profiling set \(\trainSet\), namely such that \(\MLmodelMLE{\trainSet} \eqdef \argmin_{\MLmodel \in \hypoclass} \LossFunc[\trainSet]{\MLmodel}\).
+    Then \(\MLmodelMLE{\trainSet}\) asymptotically minimizes the quantity \(\numTracesAttackEst{\MLmodelMLE{\trainSet}, \beta} \eqdef \frac{f(\beta)}{\PI{\Z}{\XXX}{\MLmodel}}\) when the size of \(\trainSet\) tends towards infinity,%
+    \footnote{
+        We recall that \(f\) is a known, invertible, strictly increasing function defined by Chésirey \etal{}~\cite{chesirey_best_2019}, and \(\beta \in [0,1]\) is the threshold defined in \autoref{eq:eff_sr}.
+    }
+    which is an upper-bound of the left-hand side in Inequality~\eqref{eq:chésirey}.
+\end{corollary}
+\begin{proof}
+    By applying \autoref{prop:cor_sup_PI}, we get
+    \begin{equation*}
+        \numTracesAttackEst{\MLmodelMLE{\trainSet}, \beta} \probConv{\card{\trainSet}} 
+        \frac{f(\beta)}{\max_{\MLmodel \in \hypoclass} \PI{\Z}{\XXX}{\MLmodelMLE{\trainSet}}}
+        = \min_{\MLmodel \in \hypoclass} \frac{f(\beta)}{\PI{\Z}{\XXX}{\MLmodel}} 
+        \geq \frac{f(\beta)}{\MI{\Z}{\XXX}}
+    \end{equation*}
+\end{proof}
+
+In other words, \autoref{cor:main_result} tells us that minimizing the \gls{nll} loss is sound for the SCA Optimization Problem (\ie{} \autoref{final_task_prof}), in the sense that has been argued in \autoref{sec:leakage_assess}, and that the term \(\numTracesAttackEst{\MLmodelMLE{\trainSet}, \beta}\) might be a good approximation of the lower bound of Inequality~\eqref{eq:chésirey}.
+However, this also emphasizes that in the pursuit of estimating \(\numTracesAttackOpt(1, \beta)\) through the \gls{nll} minimization, some weaknesses must be discussed.
+
+First, as recalled in \autoref{sec:leakage_assess}, the higher \(\numTracesAttackOpt(1, \beta)\), the looser Inequality~\eqref{eq:chésirey}.
+It is therefore of natural interest to verify to what extent the tightness of the latter inequality holds, in view of estimating \(\numTracesAttackOpt(1, \beta)\) by \(\frac{f(\beta)}{\MI{\Z}{\XXX}}\).
+This must be at least empirically verified.
+Second, the tightness of Inequality~\eqref{eq:sup_PI} is another possible source of imprecision when one wants to substitute the \gls{mi} with the \gls{pi}.
+This will be discussed in the next section, and will eventually be verified through simulations and experiments in \autoref{sec:simus} and \autoref{sec:experiments}.

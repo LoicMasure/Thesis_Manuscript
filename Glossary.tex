@@ -1,0 +1,333 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% 					Acronymes						%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\newacronym{cea}{CEA}{Commissariat à l'Énergie Atomique et aux Énergies Alternatives}
+\newacronym{aes}{AES}{Advanced Encryption Standard}
+\newacronym{des}{DES}{Data Encryption Standard}
+\newacronym{rsa}{RSA}{Rivest-Shamir-Adleman}
+\newacronym{nist}{NIST}{National Institute of Standard and Technology}
+\newacronym{fips}{FIPS}{Federal Information Processing Standard}
+\newacronym{anssi}{ANSSI}{Agence Nationale de la Sécurité des Systèmes d'Information}
+\newacronym{bsi}{BSI}{Bundesamt für Sicherheit in der Informationstechnik}
+\newacronym{emvco}{EMVCo}{Europay-Mastercard-Visa Consortium}
+\newacronym{cc}{CC}{Common Criteria for Information Technology Security Evaluation}
+\newacronym{toe}{T.O.E.}{Target of Evaluation}
+\newacronym{cesti}{CESTI}{Centre d'Évaluation de la Sécurité des Technologies de l'Information}
+\newacronym{itsef}{ITSEF}{Information Technology Security Evaluation Facility}
+\newacronym{etr}{ETR}{Evaluation Technical Report}
+\newacronym{iid}{i.i.d.}{Independent and Identically Distributed}
+\newacronym{sca}{SCA}{Side-Chanel Analysis}
+\newacronym{dl}{DL}{Deep Learning}
+\newacronym{ap}{AP}{Apprentissage Profond}
+\newacronym{ml}{ML}{Machine Learning}
+\newacronym[plural={CNNs},
+			first={Convolutional Neural Network (CNN)},
+			firstplural={Convolutional Neural Networks (CNNs)}]
+			{cnn}{CNN}{Neural Networks that implement discrete finite convolutions in place of linear layers}
+\newacronym{dnn}{DNN}{Deep Neural Network}
+\newacronym{mlp}{MLP}{Multi-Layer Perceptron}
+\newacronym{relu}{ReLU}{Rectified Linear Unit}
+\newacronym{kld}{KL}{Kullback - Leibler}
+\newacronym{mi}{MI}{Mutual Information}
+\newacronym{pi}{PI}{Perceived Information}
+\newacronym{hi}{HI}{Hypothetical Information}
+\newacronym{nll}{NLL}{Negative Log Likelihood}
+\newacronym{mse}{MSE}{Mean Square Error}
+\newacronym{wh}{WH}{Walsh-Hadamard}
+\newacronym{iff}{i.f.f.}{if and only if}
+\newacronym{aka}{a.k.a.}{also known as}
+\newacronym[plural={l.u.ts},
+			firstplural={Look-Up Tables (l.u.t.)}]
+			{lut}{l.u.t.}{Look-Up Table}
+\newacronym{pmf}{p.m.f.}{Probability Mass Function}
+\newacronym{pdf}{p.d.f.}{Probability Density Function}
+\newacronym{dft}{D.F.T.}{Discrete Fourier Transform}
+\newacronym{sgd}{SGD}{Stochastic Gradient Descent}
+\newacronym[
+	plural={P.o.Is},
+	firstplural={Points of Interest (P.o.Is)}]
+	{poi}{P.o.I}{Point of Interest}
+\newacronym{vc}{VC}{Vapnik-Chervonenkis}
+\newacronym{sat}{SAT}{Propositional Satisfiability Problem}
+\newacronym{ctf}{C.t.F.}{Capture the Flag}
+\newglossaryentry{isw}{
+	type=\acronymtype,
+	name={I.S.W.},
+	description={Ishai-Sahai-Wagner; name of the scheme that computes a field multiplication for a Boolean secret-sharing},
+	first={Ishai-Sahai-Wagner (I.S.W.)},
+}
+\newacronym{rng}{r.n.g.}{Random Number Generator}
+\newacronym{cpu}{CPU}{Central Processing Unit}
+\newacronym{mcu}{MCU}{Micro-Controller Unit}
+\newacronym{cpa}{CPA}{Correlation Power Analysis}
+\newacronym{cema}{CEMA}{Correlation Electro-Magnetic Analysis}
+\newacronym{ta}{TA}{Template Attacks}
+\newacronym{sr}{SR}{Success Rate}
+\newacronym{ge}{GE}{Guessing Entropy}
+\newacronym{cmos}{CMOS}{Complementary Metal Oxide Semiconductor}
+\newacronym{em}{EM}{Electro-Magnetic}
+\newacronym{lsb}{l.s.b.}{Least Significant Bit}
+\newacronym{msb}{m.s.b.}{Most Significant Bit}
+\newglossaryentry{lra}{
+	type=\acronymtype,
+	name={l.r.a.},
+	description={Linear Regression Analysis \aka{} stochastic attack~\cite{schindler_stochastic_2005}},
+	first={Linear Regression Analysis (l.r.a.)},
+}
+\newacronym{gta}{GT}{Gaussian Template}
+\newacronym{lda}{LDA}{Linear Discriminant Analysis}
+\newacronym{kda}{KDA}{Kernel Discriminant Analysis}
+\newacronym{qda}{QDA}{Quadratic Discriminant Analysis}
+\newacronym{tpm}{TPM}{Trusted Platform Module}
+\newacronym{tee}{TEE}{Trusted Execution Environment}
+\newacronym{sim}{SIM}{Subscriber Identity Module}
+\newacronym{fib}{F.I.B.}{Focused Ion Beamer}
+\newacronym{snr}{SNR}{Signal-to-Noise Ratio}
+\newacronym{iot}{IoT}{Internet of Things}
+\newacronym{tvla}{TVLA}{Test Vector Leakage Assessment}
+\newacronym[firstplural={Specialized Generators of Polymorphic Code (SGPCs)}]{sgpc}{SGPC}{Specialized Generator of Polymorphic Code}
+\newacronym{prng}{RNG}{Random Number Generator}
+\newacronym{ascad}{ASCAD}{\gls{anssi}'s \gls{sca} Databases}
+\newacronym{aesrd}{\gls{aes}-RD}{AES - Random Delay}
+\newacronym{aeshd}{\gls{aes}-HD}{AES - Hamming Distance}
+\newacronym{os}{OS}{Operating System}
+\newacronym{uart}{UART}{Universal Asynchronous Receiver Transmitter}
+\newacronym{vhdl}{VHDL}{VHSIC Hardware Description Language}
+\newacronym{fpga}{FPGA}{Field-Programmable Gate Array}
+\newacronym{adam}{Adam}{Adaptive Moment Estimation}
+\newacronym{pca}{PCA}{Principal Component Analysis}
+\newacronym{ram}{RAM}{Random Access Memory}
+\newacronym{mia}{MIA}{Mutual Information Analysis}
+\newacronym{dpa}{DPA}{Differential Power Analysis}
+\newacronym{erm}{ERM}{Empirical Risk Minimization}
+\newacronym{dag}{DAG}{Directed Acyclic Graph}
+\newacronym{svm}{SVM}{Support Vector Machine}
+\newacronym{api}{API}{Application Programming Interface}
+\newacronym{lstm}{LSTM}{Long Short-Term Memory}
+\newacronym{gpu}{GPU}{(General Purpose) Graphic Processing Unit}
+\newacronym{vgg}{VGG}{Visual Geometry Group}
+\newacronym{ilsvrc}{ILSVRC}{ImageNet Large-Scale Visual Recognition Challenge}
+\newacronym{cer}{CER}{Cross Entropy Ratio}
+\newacronym{gv}{GV}{Gradient Visualization}
+\newacronym{lrp}{LRP}{Layerwise Relevance Propagation}
+\newacronym{cots}{COTS}{Commercially available Of The Shelf}
+\newacronym{ic}{IC}{Integrated Circuit}
+\newacronym{lwe}{LWE}{Learning With Errors}
+\newacronym{gan}{GAN}{Generative Adversarial Network}
+\newglossaryentry{jil}{
+	type=\acronymtype,
+	name={JIL},
+	description={Joint Interpretation Library, the reference document describing the state of the art in terms of physical attacks},
+	first={Joint Interpretation Library (JIL)},
+}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% 			Définitions (glossaires standard)		%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\newglossaryentry{cryptography}{
+	name={cryptography},
+	description={The art of designing \gls{encryption} and \gls{decryption} systems}
+}
+\newglossaryentry{primitive}{
+	name={cryptographic primitive},
+	description={Algorithm that is the building block of a crypto-system, \eg{} processing \gls{encryption}, \gls{decryption}, or hach operations}
+}
+\newglossaryentry{encryption}{
+	name={encryption},
+	description={Transforming a plaintext message into a ciphertext meaningless for anyone whose the message is not addressed}
+}
+\newglossaryentry{decryption}{
+	name={decryption},
+	description={Transforming back a ciphertext message into the initial plaintext message}
+}
+\newglossaryentry{cryptanalysis}{
+	name={cryptanalysis},
+	description={The art of guessing the plaintext message behind a ciphertext message}
+}
+\newglossaryentry{cryptology}{
+	name={cryptology},
+	description={The union of \gls{cryptography} and \gls{cryptanalysis}}
+}
+\newglossaryentry{sym_crypto}{
+	name={symmetric cryptography},
+	description={Field of cryptography where the encryption key also serves for decryption}
+}
+\newglossaryentry{asym_crypto}{
+	name={asymmetric cryptography},
+	description={Field of cryptography where the encryption key differs from the decryption one}
+}
+\newglossaryentry{block_cipher}{
+	name={block cipher},
+	description={\gls{sym_crypto} algorithm that splits a plaintexts message into blocks of fixed size that are then encrypted and decrypted separately}
+}
+\newglossaryentry{diffusion}{
+	name={diffusion},
+	description={Method to dissipate into long range statistics -- \ie{} into statistical structure involving long combinations of letters in the ciphertext~\cite{shannon_communication_1949}}
+}
+\newglossaryentry{confusion}{
+	name={confusion},
+	description={Method making the relation between the simple statistics of ciphertexts and the simple description of the secret key a very ocmplex and involved one~\cite{shannon_communication_1949}}
+}
+\newglossaryentry{linAttack}{
+	name={linear cryptanalysis},
+	description={A class of \gls{cryptanalysis} based on linear approximations of the target \gls{primitive}}
+}
+\newglossaryentry{diffAttack}{
+	name={differential cryptanalysis},
+	description={A class of \gls{cryptanalysis} based on the study of how slight variations in some input messages span variations in the cipher text, depending on the nature of the secret key}
+}
+\newglossaryentry{sigmaAlg}{
+	name={\(\sigma\)-algebra},
+	description={A collection of subsets of a global set that is closed under complement, and is closed under \gls{countable} unions; \emph{Tribu} in French}
+}
+\newglossaryentry{countable}{
+	name={countable},
+	description={Which is in bijection with \(\natSet\)}
+}
+\newglossaryentry{finite}{
+	name={finite},
+	description={Which is in bijection with \(\llbracket1,N\rrbracket\). \(N\) is called the \emph{cardinality} of the set}
+}
+\newglossaryentry{gmorph}{
+	name={group morphism},
+	description={A map that preserves the mathematical group structure between two spaces}
+}
+\newglossaryentry{vecSpace}{
+	name={vector space},
+	description={A linear algebraic structure that is stable by linear combinations where scalars are taken from a field~\cite[Chap. 7.1]{terras_2018}}
+}
+\newglossaryentry{prodScal}{
+	name={scalar product},
+	description={A bilinear mapping to \(\realSet_+\) that is symmetric and semi-positive}
+}
+\newglossaryentry{partDeriv}{
+	name={partial derivative},
+	description={derivative of a function with respect to only one variable}
+}
+\newglossaryentry{gradient}{
+	name={{g}radient},
+	description={The vector made of every \gls{partDeriv} of a function}
+}
+\newglossaryentry{jacob}{
+	name={Jacobian matrix},
+	plural={Jacobian matrices},
+	description={The matrix whose rows are the transposed gradient of each elementary function \(\xxx \mapsto f(\xxx)[i] \in \realSet\)}
+}
+\newglossaryentry{commut}{
+	name={commutative},
+	description={Binary operation \(\star\) such that \(a \star b = b \star a\)}
+}
+\newglossaryentry{assoc}{
+	name={associative},
+	description={Binary operation \(\star\) such that \((a \star b) \star c = a \star (b \star c)\)}
+}
+\newglossaryentry{d&c}{
+	name={divide-and-conquer},
+	description={A way to solve a problem by dividing it into several sub-problems that are simpler to solve}
+}
+\newglossaryentry{support}{
+	name={support},
+	description={Set where a function is non zero}
+}
+\newglossaryentry{sigProc}{
+	name={signal processing},
+	description={Mathematical field that studies the techniques of analysis and processing of signals}
+}
+\newglossaryentry{stochastic}{
+	name={stochastic},
+	description={Which involves randomness}
+}
+\newglossaryentry{consistent}{
+	name={consistent},
+	description={Finite proxy approach (\eg{} estimation, optimization) that converges to the target result}
+}
+\newglossaryentry{characteristic}{
+	name={characteristic},
+	description={Least integer \(p\) such that \(p \cdot 1_{\gf{}{}} = 0_{\gf{}{}}\) in a field \(\gf{}{}\)}
+}
+\newglossaryentry{cyclic}{
+	name={cyclic},
+	description={Finite group such that there is one element spanning all the others, by successive application of the inner law \(\gplaw\)}
+}
+\newglossaryentry{convex}{
+	name={convex},
+	description={Function whose epigraph is convex. See~\cite{boyd_convex_2004}}
+}
+\newglossaryentry{critical}{
+	name={critical},
+	description={Point where the gradient is zero}
+}
+\newglossaryentry{voisinnage}{
+	name={neighbourhood},
+	description={Set of points that are close to a point for a given norm}
+}
+\newglossaryentry{vertical}{
+	name={vertical},
+	description={Attacks involving univariate leakages}
+}
+\newglossaryentry{ae}{
+	name={almost everywhere},
+	description={Which is only not true on a set of measure zero}
+}
+\newglossaryentry{nph}{
+	name={NP-hard},
+	description={A problem for which there is no algorithm providing a solution in a polynomial time}
+}
+\newglossaryentry{hp}{
+	name={hyper-parameter},
+	description={A parameter which cannot be optimized using an optimization algorithm, \eg{} discrete parameters of the architecture}
+}
+\newglossaryentry{resnet}{
+	name={Resnet},
+	description={Deep Residual Neural Networks, equipped with \emph{skip} connections in the architecture~\cite{he_deep_2015}}
+}
+\newglossaryentry{sparse}{
+	name={sparse},
+	description={Containing lots of values (close) to zero}
+}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%					Symboles						%	
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\newglossaryentry{l2}{
+	type=notation,
+	name={\ensuremath{L^2}},
+	description={Quadratic error},
+	sort={l}%
+}
+\newglossaryentry{eqdef}{
+	type=notation,
+	name={\ensuremath{\protect\triangleq}},
+	description={An equality by definition},
+	sort={eqdef}%
+}
+
+\newglossaryentry{probConv}{
+	type=notation,
+	name={\ensuremath{\mathcal{P}}},
+	description={Convergence in probabilities},
+	sort={conv_prob}%
+}
+
+\newglossaryentry{lawConv}{
+	type=notation,
+	name={\ensuremath{\protect\overset{\mathcal{L}}{\protect\longrightarrow}}},
+	description={Convergence in law},
+	sort={conv_law}%
+}
+\newglossaryentry{gfpn}{
+  type=notation,
+  name={\ensuremath{\protect\gf{p}{q}}},
+  description={Galois Field of polynomials of degree \(q\) with coefficients in \gf{2}{}},
+  sort={gfpn}
+}
+\newglossaryentry{gplaw}{
+  type=notation,
+  name={\ensuremath{\cdot}},
+  description={Abstract inner law for a commutative group},
+  sort={gfpn}
+}
+\newglossaryentry{cplex}{
+	type=notation,
+	name={\ensuremath{\mathbb{C}}},
+	description={The field of complex numbers},
+	sort={complex}
+}

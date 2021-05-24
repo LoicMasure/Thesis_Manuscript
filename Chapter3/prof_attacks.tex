@@ -1,0 +1,135 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%                               PROFILED ATTACKS                               %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Profiled attacks provide a way to help the attacker to accurately approximate the leakage model, in order to allow the use of the maximum likelihood distinguisher -- see \autoref{eq:mle_def} -- to be practically used in an \gls{sca} context.
+From an evaluator's point of view, it is also relevant, since it allows him to implement an attack close to the optimal one, rather than just considering it as theoretical.
+This is useful when assessing the performance of a \emph{real}, possibly non perfect attacker.
+It relies on the existence of a clone device \(\target'\) of the actual target \(\target\).
+The clone device is assumed to behave as an \emph{open sample}, \ie{} it is fully controlled by the attacker; especially the knowledge (and eventually the choice) of all the parameters and intermediate computations processed during the execution of the primitive, including the random values used to secure the processing -- see \autoref{sec:masking}.
+
+A profiled attack, depicted in \autoref{fig:prof_scenario}, is divided into two distinct phases.
+% Profiling phase
+The first one, called \emph{profiling phase}, as depicted on the left of \autoref{fig:prof_scenario}, exploits so-called \emph{profiling traces}.
+Profiling traces are acquisitions taken under known values for the sensitive variable \(\Z\), so the attacker collects a \emph{profiling set} \(\trainSet \eqdef \{(\xxx_1, \z_1), \ldots, (\xxx_{\numTracesProf},\z_{\numTracesProf})\}\), for which the correct association trace/sensitive variable is known.
+The profiling phase is typically done on the clone device \(\target'\), assumed to have the same physical and algorithmic behavior as the target \(\target\).
+Intuitively, the less similar the behavior of the clone device \(\target'\) with respect to the target device \(\target\), the more loss in the attack performance.
+That is why in practice, an evaluator aiming at finding the worst-case scenario often considers the target device \(\target\) to be the exact clone \(\target'\) on which he is working.%
+\footnote{
+    This assumption is discussed in \autoref{sec:review_dl_sca} when we review the literature working on the \emph{portability} issue.
+}
+
+% Attack phase
+The second phase of a profiling attack is the \emph{attack phase} strictly speaking, during which the attacker \(\attacker\) proceeds exactly as in the gray-box scenario depicted in \autoref{fig:gray-box}.
+\begin{figure}
+    \centering
+    \input{profiling_scenario}
+    \caption{Profiling attack scenario: a gray-box attack scenario with a preliminary profiling phase.}
+    \label{fig:prof_scenario}
+\end{figure}
+Therefore, \(\attacker\) may take the advantage of the previous profiling phase to infer over it. 
+
+\paragraph{Assessing a Profiled Attack.}
+Considering a profiled attack scenario allows an evaluator to conduct a worst-case scenario analysis of the target security.
+Such a scenario typically covers very powerful attackers, potentially without restriction in terms of financial, material and human resources.
+Regarding this analysis, it is common to assume the attacker to have an \emph{unbounded} profiling power, in order to fully exploit the behavior of the open sample.
+This means concretely that the resources used by an attacker in a profiling scenario, in terms of human expertise, time and technical means, are not critical here and therefore, are considered as negligible.
+In particular, no bound on the number \(\numTracesProf\) of acquired traces in the profiling set \(\trainSet\) is assumed in this thesis, contrary to the number \(\numTracesAttack\) of traces in the attack set \(\attackSet\) that we assess during the evaluation of a target.
+However, from an evaluator's point-of-view, this assumption is questionable.
+If the target device is not provably secure against profiled \gls{sca}, the security guarantees come from a practical evaluation, which cannot be mounted with infinite resources.
+Hence, the worst-case scenario analysis is not always affordable in a profiled attack context.
+That is why some works also consider the case of restricted profiling power for the evaluator too~\cite{picek_profiling_2019}.
+Chapters \ref{chap:machine_learning} and \ref{chap:ches_20} will discuss the impact of the number \(\numTracesProf\) of profiling traces on the quality of the profiling phase.
+
+
+% Gaussian templates
+\paragraph{\glsfirst{ta}.}
+The most known estimation method of the leakage behavior is the use of \glspl{gta}, as initially proposed by Chari \etal{}\,at \textsc{Ches}'02~\cite{chari_template_2002}.
+Precising the term ``Gaussian'' here means that one assumes the likelihood to follow a (eventually multivariate) Gaussian law:
+\begin{equation}
+    \XXX \given \Z = \sensValue \sim \normpdf{\vectObs{M}_\sensValue}{\vectObs{\Sigma}_\sensValue},
+\end{equation}
+whose parameters \(\vectObs{M}_\sensValue, \vectObs{\Sigma}_\sensValue\) (possibly) depend on the sensitive value \(\sensValue\) processed by the intermediate computation \(\Z\).
+During the profiling phase, those parameters are estimated respectively thanks to the empirical mean and the empirical covariance matrix for each cluster of traces sharing the same value \(\sensValue\).
+
+% Problem with covariance matrix
+The critical task here comes from the estimation of the \(\frac{\traceLength \times (\traceLength-1)}{2}\) different coefficients of the covariance matrix \(\vectObs{\Sigma_\sensValue}\) for each value \(\sensValue \in \sensVarSet\).
+Choudary \etal{} recall that the latter one must be invertible -- see \autoref{eq:gauss_law}, and explain that a necessary condition is that \(\numTracesProf \geq \traceLength\).
+The latter condition is usually not sufficient because of the noise in the leakage.
+Indeed, making estimations of the parameters accurate enough in order to make a strong discrepancy between each template would require much more profiling traces \(\numTracesProf\).
+Although not critical at first sight since we do not assume any limitation on the number of profiling traces, it may become a practical issue for the evaluator if the input dimensionality becomes too high.
+
+To circumvent this problem, two solutions are proposed in the literature.
+% Dimensionality reduction
+First, a dimensionality reduction pre-processing can be done on the acquired traces from the profiling set.
+This solution aims at decreasing \(\traceLength\).
+Some of those techniques will be discussed in \autoref{sec:characterization}.
+% Other techniques
+Second, one may consider other assumptions on the covariance matrix, in order to decrease the required number of data for the estimation.
+The literature in statistics proposes a wide spectrum of such techniques.
+Yet, we mention hereafter the ones used in the specific case of profiled \gls{sca}:
+\begin{itemize}
+    \item When no additional assumption is done, one remains with all covariance matrices, one for each cluster tagged with the sensitive value \(\sensValue\).
+    In that case, the covariance matrices are said \emph{heteroscedastic}.
+    The combination of a Gaussian template with heteroscedastic covariance matrices and the maximum likelihood distinguisher is also known as a \gls{qda} in the machine learning terminology~\cite[Chap.~4.3]{hastie_elements_1993}.
+    \item In opposition to the heteroscedastic assumption, the covariance matrices may eventually be assumed to be all equal to each other.
+    In that case, the covariance matrices are said \emph{homoscedastic}.
+    This is an interesting assumption when one is guaranteed that the discriminative information is contained in the mean vector \(\vectObs{M}_\sensValue\), since this enables to estimate only one covariance matrix, which we explained to be the critical task.
+    The use of a Gaussian template with homoscedastic covariance matrices and the maximum likelihood distinguisher is also known as a \gls{lda} in the machine learning terminology~\cite[Chap.~4.3]{hastie_elements_1993}.
+    This approach has been proposed by Choudary \etal{} at \textsc{Cardis}'13~\cite{choudary_efficient_2014} under the name of \emph{pooled} template.%
+    \footnote{
+        In \gls{sca}, the term \gls{lda} may either refer to the pooled templates, or to a dimensionality reduction technique, \aka{} the \emph{Fisher's \gls{lda}}~\cite{standaert_using_2008}.
+    }
+    \item In addition to the homoscedastic assumption, the covariance matrices may even be assumed to be diagonal.
+    In other words, this means that all the samples \(\XXX[t], t \in \traceLength\)  are assumed to leak independently from each other.
+    The use of a Gaussian template with a single diagonal covariance matrix and the maximum likelihood distinguisher is also known as a \emph{naive Bayes} classifier in the machine learning terminology~\cite[Chap.~6.6.3]{hastie_elements_1993}.
+    The soundness of this approach has been discussed by Picek \etal{}~\cite{picek_template_2017}.
+\end{itemize}
+
+% Non-gaussian leakage model
+It is worth emphasizing that although the \gls{sca} community almost always assumes that the leakage \(\XXX\) follows a multivariate Gaussian law, templates may be obviously extended beyond this case.
+The interested reader may refer to the works of Heuser \etal{} discussing the latter assumption at \textsc{Ches}'14~\cite{heuser_good_2014}.
+
+
+\paragraph{Generative \vs{} Discriminative.}
+\label{sec:gen_vs_disc}
+\glspl{gta} are an example of a so-called \emph{generative} model.
+This means that the leakage model, \ie{}, the likelihood function \(\prob{\XXX \given \Z}\) may be used to generate synthetic traces.
+% Example
+To this end, one may take a \gls{prng} to draw a random value \(\z \in \sensVarSet\) according to a uniform distribution; before a vector \(\xxx\) according to the likelihood distribution \(\prob{\XXX \given \Z = \z}\), estimated thanks to the profiling phase.
+
+In other words, a generative model is able to make a discrepancy between the values \(\sensValue \in \sensVarSet\) of the sensitive variable \(\Z\), by completely modelizing how such values would affect the input trace \(\XXX\), even if some parts of the modelization do not enable to make any discrepancy between the underlying values of the sensitive variable.
+This is a more general problem than just guessing which is the most likely value of \(\Z\) that is leaking from a given trace \(\xxx\).
+The latter approach is called the \emph{discriminative} model.
+Such models are typically estimated with machine learning algorithms, that we will present in \autoref{chap:machine_learning}.
+
+% Analogy
+Intuitively, estimating a discriminative model is a simpler task than estimating a generative one, since the latter one requires to build a complete model of \(\XXX\), whereas the former one only focuses on the discriminative features of \(\XXX\) in order to guess \(\Z\).
+This was phrased as follows by Vladimir Vapnik in his principle for solving problems using a restricted amount of information: 
+\begin{quote}
+    ``When solving a given problem, try to avoid a more general problem as an intermediate step.''~\cite[Chap.~1.9]{vapnik_nature_2000}.
+\end{quote}
+However, contrary to generative models, discriminative ones are more seen as black-box, since they do not always reveal the latent mechanism linking the variable to explain \(\Z\) to the explaining variable \(\XXX\).
+
+Replacing a generative model by a discriminative one turns out to be possible in profiled attacks, according to the following lemma.
+\begin{lemma}[Discriminative distinguisher]
+    \label{lemma:disc_dist}
+    Suppose that the attacker \(\attacker\) knows the posterior probability distribution \(\prob{\Z \given \XXX}\) instead of the likelihood distribution \(\prob{\XXX \given \Z}\).
+    Then the maximum likelihood distinguisher can equivalently be defined as:
+    \begin{equation}
+        \MLEscore{\attackSet}[\key] = \sum_{i=1}^{\numTracesAttack} \log{\prob{\Z = \miniEncrypt{\p_i,\key} \given \XXX = \xxx_i}} + u \enspace ,
+        \label{eq:mle_post}
+    \end{equation}
+    where \(u \in \realSet\) is a constant independent of \(\key\).
+\end{lemma}
+\begin{proof}
+    According to the Bayes' Theorem (see \autoref{eq:bayes_thm}), one have:
+    \begin{eqnarray}
+        \prob{\Z = \miniEncrypt{\p_i,\key} \given \XXX = \xxx_i} & = & \prob{\XXX = \xxx_i \given \Z = \miniEncrypt{\p_i, \key}} \times \frac{\prob{\Z = \miniEncrypt{\p_i,\key}}}{\prob{\XXX = \xxx_i}} \enspace .
+        \label{eq:mle_like}
+    \end{eqnarray}
+    Since \(\Z\) is uniform, \(\prob{\Z = \miniEncrypt{\p_i,\key}}\) does not depend on \(\key\).
+    That is why the logarithm of the likelihood and the posterior probability distributions are equal, up to an additive constant (\ie{}, independent of \(\key\)).
+    Therefore, the distinguisher, as defined in both \autoref{eq:mle_post} and \autoref{eq:mle_def}, will always imply the same key hypotheses ranking.
+\end{proof}
+% Equivalence between MAP and ML in our context.
+The equivalent definitions of the maximum likelihood distinguisher enables the attacker to choose the distribution which fits the most its constraints, and in particular, opens the way towards the use of \gls{ml} algorithms as we will see in \autoref{chap:machine_learning}.

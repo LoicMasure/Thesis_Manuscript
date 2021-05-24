@@ -1,0 +1,156 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%                           DEFINITION OF THE SCA ATTACK SCENARIO              %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{The Attack Scenario}
+\label{sec:problem_position}
+Let \(\target\) be the instance of the \emph{target} device under an attack conducted by an adversary, \aka{} \emph{attacker}, denoted by \(\attacker\).
+We assume that \(\target\) runs a cryptographic primitive \(\encrypt{}\) each time that a query, represented by a plaintext \(\ppp\), is sent by the attacker.
+The primitive being set by a secret encryption key \(\kkkTest\), the target returns the ciphertext corresponding to the encryption of the sent plaintext, that is, \(\ccctx = \encrypt{\ppp, \kkkTest}\).
+The goal of the attacker is then to guess the secret key, assumed to belong to a known key space \(\keySet\).
+
+% Modelization
+In this thesis, we modelize a \gls{sca} by the following scenario, that is illustrated in \autoref{fig:gray-box}.
+\input{illustration_scenario}
+First, the target randomly draws a secret key \(\kkkTest\) that is used for the encryption.
+Then, \(\attacker\) sends a given number \(\numTracesAttack\) of queries to the target \(\target\).
+Those queries are materialized by the input plaintexts \(\ppp_1, \ldots, \ppp_{\numTracesAttack}\).
+For each plaintext \(\ppp_i \in \plaintextSet\), the target \(\target\) returns the corresponding ciphertext \(\ccctx_i\) but also a measurement \(\xxx_i \in \leakSpace\), \aka{} \gls{sca} \emph{trace}, corresponding to the physical leakage occuring during the computation \(\ccctx_i = \encrypt{\ppp_i, \kkkTest}\).
+In the remaining of this thesis, we denote by \(\attackSet \eqdef \-\{(\xxx_1, \ppp_1), \ldots, (\xxx_{\numTracesAttack}, \ppp_{\numTracesAttack})\}\) the \emph{attack set} acquired by the attacker \(\attacker\) during the \gls{sca}.
+% Comment gray/black-box
+This attack scenario is often called a \emph{gray-box} attack, in opposition to a black-box scenario corresponding to classical cryptanalysis, where the attacker does not have access to the \gls{sca} traces in the attack set, but rather the ciphertexts instead.
+
+% Introducing probas
+From a probabilistic point of view, \(\ppp, \kkkTest, \xxx\) can be respectively seen as the realizations of the corresponding random variables \(\PPP, \KKK, \XXX\), according to the probabilistic graph presented in \autoref{fig:proba_graph}.
+\input{illustration_proba_graph}
+More precisely, we make the assumption that \(\XXX\) only depends on a random variable \(\ZZZ\) resulting in an intermediate computation denoted by \(\miniEncrypt{}\) involving chunks of \(\PPP\) and \(\KKK\),%
+\footnote{
+    \autoref{sec:reducing_chunk} will discuss how to reduce the problem to chunks of plaintexts and keys.
+}
+\eg{}, \(\miniEncrypt{\PPP, \KKK} = \PPP \plusgf \KKK\).
+This random variable is called \emph{sensitive} since it depends on the secret key, and \emph{intermediate} since it corresponds to an intermediate state between the plaintext and the final ciphertext.
+In other words, some knowledge about the values \(\zzz_i = \miniEncrypt{\ppp_i, \kkkTest}, i \in \llbracket 1, \numTracesAttack \rrbracket\) of the sensitive intermediate variable, induces some knowledge about the underlying secret key \(\kkkTest\) used for the encryption.
+
+Moreover, we assume that the couple \((\PPP, \XXX)\) is not independent from the secret key \(\KKK\).
+Otherwise, considering the gray-box scenario has no further interest compared to the black-box one.
+% Discussion continuous/discrete for the traces
+Finally, the random variable \(\XXX\) is usually assumed to be drawn from a continuous \gls{pdf}, since it measures a physical phenomenon.
+However in practice, the observations of this random variable are discretized during the acquisition phase by the oscilloscope.
+That is why the leakage space is often of the type \(\leakSpace = \llbracket 0, 2^\omega-1 \rrbracket^\traceLength\), where \(\traceLength\) is the dimensionality of the observations, and where \(\omega\) denotes the resolution of the oscilloscope -- typically \(\omega=8\).
+
+% Exploiting the information by the attacker
+In the pursuit of his ultimate goal, the attacker can process the attack set in order to extract \emph{information} on (a chunk of) the secret key.
+Depending on how the attacker wants to exploit this information, the latter one can take different forms.
+\begin{itemize}
+    \item Either the attacker aims at directly recovering the secret key from \(\attackSet\), without additional investigation.
+    Then, he returns a value \(\kkkHyp\) that he believes to correspond to the right key \(\kkkTest\), according to the extracted information from \(\attackSet\).
+    \item Or the attacker \(\attacker\) may want to combine a \gls{sca} with other attack techniques such as:
+    \begin{itemize}
+        \item \emph{Algebraic} attacks, \eg{}, by using a \gls{sat} solver to find the right key among a restricted list of \(\succOrder\) key candidates \(\kkkHyp_1, \ldots, \kkkHyp_\succOrder\) returned after the \gls{sca} -- where \(\succOrder \ll \card{\keySet}\).
+        Such techniques have been initially introduced by Renauld \etal{}~\cite{renauld_algebraic_2009,renauld_aes_2009}.%
+        \footnote{
+            This approach has been rewarded at the \textsc{Ches} 2018 \gls{ctf}~\cite{gohr_ches_2019,hu_machine_2019,gohr_efficient_2020}.
+        }
+        \item \emph{Brute-force} attacks, \eg{}, by using a key enumeration algorithm~\cite{veyrat-charvillon_optimal_2012,martin_counting_2015,bogdanov_fast_2015,poussier_key_2018} fed with the set of key hypotheses \(\keySet\) sorted in a decreasing order of preference, returned by the \gls{sca} until it reaches the right key \(\kkkTest\).
+    \end{itemize}
+\end{itemize}
+
+More generally, those different approaches may be encompassed by the following one: the \gls{sca} attacker \(\attacker\) returns a vector assigning a score to each hypothetical value of the key.
+This vector is computed thanks to a so-called \emph{distinguisher} that we define hereafter.
+\begin{definition}[Distinguisher]
+    \label{def:distinguisher}
+    Let \(\attackSet\) be an attack set.
+    A \emph{distinguisher} is a mapping from \(\attackSet\) to a \emph{score vector} in \(\realSet^{\card{\keySet}}\):
+    \begin{equation}
+        \disting{}: \attackSet \mapsto 
+        \left(
+        \begin{matrix}
+			\vdots \\
+			\disting{\attackSet}[\kkk] \\
+			\vdots
+        \end{matrix}
+        \right).
+    \end{equation}
+\end{definition}
+\begin{remark}
+    The definition of the distinguisher may be refined by constraining the scores to belong to the interval \([0,1]\), \(0\) denoting the least confidence in the corresponding key hypothesis while \(1\) denoting the greatest confidence.
+    This constraint can still be obtained by applying a normalization of the scores.
+\end{remark}
+% Interpretation of the distinguisher on the other scenarios
+This definition encompasses the different forms of information exploitation from the \gls{sca} presented so far.
+For the first way, the attacker \(\attacker\) takes \(\kkkHyp = \argmax_{\kkk \in \keySet} \disting{\attackSet}[\kkk]\).
+The attack is then said \emph{successful} \gls{iff} \(\kkkHyp = \kkkTest\).
+For the second way, \ie{} the algebraic attack, the attacker \(\attacker\) returns a list of key candidates corresponding to the \(\succOrder\) first scores from \(\disting{\attackSet}\).
+The attack is said successful \gls{iff} \(\kkkTest \in \{\kkkHyp_1, \ldots, \kkkHyp_\succOrder\}\).
+Finally, for the last way, the attacker enumerates the key candidates by decreasing order of their scores in \(\disting{\attackSet}\).
+The rank of the right key therefore quantifies the amount of enumeration necessary to succeed the key recovery.
+In \autoref{sec:performance_metrics}, we will further discuss this rank through the notion of \gls{ge}.
+Although unknown in advance by a pure attacker, this quantity is known by a developer/evaluator in an evaluation context.
+
+\begin{remark}[Vertical Attacks]
+    The \gls{sca} literature sometimes makes a discrepancy between \emph{vertical} attacks, namely ``technique analyzing the same sample time regions of several [\ldots] traces'' in opposition to \emph{horizontal} attacks that ``analyze many portions of a single trace''~\cite{cagli_these_2018}.
+    The attack scenario presented in this thesis particularly fits the case of vertical attacks, which are typically used against block ciphers, whereas horizontal attacks are rather used on \gls{asym_crypto}, \eg{} based on \gls{rsa}.
+\end{remark}
+
+
+\subsection{Reducing the Problem.}
+\label{sec:reducing_chunk}
+% Degrees of freedom for the attacker
+At this stage of the description, it is noticeable that \(\attacker\) has two main degrees of freedom, namely the choice of the distinguisher and the strategy%
+\footnote{
+    The actual term used in reinforcement learning is \emph{policy}~\cite{sutton_reinforcement_1998}.
+}
+to choose the plaintexts \((\ppp_i)_{i \in \llbracket 1, \numTracesAttack \rrbracket}\) for the queries, materialized by the \pmf{}\,of \(\PPP\) that is set by the attacker.
+We discuss both degrees of freedom hereafter.
+
+
+For the \gls{aes}, it is usual to take the input or the output of the first \(\sub\) operation.
+Indeed, at this step of the algorithm, no diffusion operation has been applied yet in the encryption so \(\ZZZ\) is the byte-wise output of the composition \(\p, \key \mapsto \Sbox[\p \plusgf \key]\).
+Since the \pmf{}\ of the secret key is assumed to be uniform over the AES field \(\gf{2}{8}\),%
+\footnote{
+    Otherwise, the uncertainty on the key does not ensure anymore the security, and a simple brute-force attack may become affordable for the attacker.
+}
+we have that for all value \(\ppp\) chosen by \(\attacker\), the sensitive random variable \(\ZZZ\) is also uniform and independent from \(\PPP\), and, likewise, \(\XXX\) is independent from \(\PPP\).
+% Consequence: random choice of plaintext
+In other words, the attacker has no reason to prefer the sending of a plaintext value from another.
+Since we assume in our scenario that the plaintexts are all sent at the same time, this concern all the plaintexts.
+That is why in the following, we will assume that the plaintexts are \gls{iid} and randomly chosen according to the uniform law.\label{sec:random_p}
+
+% Decomposition on each byte
+More interestingly, this also means that all the bytes of the sensitive variable are independent from each other, and so are the bytes of the key and those of the plaintext.
+Therefore the \(j\)-th byte \(\ZZZ[j]\) of the sensitive variable only depends on the \(j\)-th byte of plaintext \(\ppp[j]\) and on the \(j\)-th byte of the secret key \(\kkkTest[j]\).
+This allows us to recover the secret key \(\kkkTest\) as a byte-wise manner, in a so-called \emph{divide-and-conquer} strategy.
+The recovery of one key byte at the time enables the attacker \(\attacker\) to drastically reduce the key chunk search space from \(2^{128}\) to \(2^8\), thereby breaking the high complexity usually required to run an attack in the black-box threat model.
+The whole secret key can then be recovered by replicating the reduced attack on the \(16\) key bytes independently.
+This reduction makes the \gls{sca} particularly efficient regarding cryptanalytic attacks.
+
+In the remaining of this thesis, unless not precised, we will only consider the recovery of one byte of the secret key -- hence implicitly assuming that it applies similarly to all key bytes.
+This means that we substitute the plaintext random vector \(\PPP \in (\gf{2}{8})^{16}\) by a random variable \(\Pt \in \gf{2}{8}\).
+Likewise, we substitute the secret key \(\KKK\) by \(\K\) and the sensitive vector \(\ZZZ\) by \(\Z\).
+The reader's attention is drawn however on the fact that the leakage \(\XXX\) is still considered as a vector.
+
+\subsection{Beyond our Attack Scenario.}
+\label{sec:beyond_scenario}
+The gray-box scenario considered here presented the powers and degrees of freedom of an attacker aiming at recovering the secret key.
+Despite being beyond the scope of this thesis, we also provide hereafter a (non-exhaustive) list of ways to build an augmented attack compared to what is assumed here for the attacker.
+
+
+\paragraph{Adaptive Chosen Plaintexts.}
+Rather than sending the \(\numTracesAttack\) queries to the target \(\target\) and then waiting for the acquisitions of the \(\numTracesAttack\) corresponding traces, a more realistic scenario would be to send a first query \(\ppp_1\), then to acquire the first trace \(\xxx_1\) along with the cipher text \(\ccctx_1\) before sending the next query, and so on.
+In that case, the attacker may already collect some information about the secret key after each acquisition, or equivalently before each query.
+This way, he may eventually use an adaptive chosen-plaintext strategy that may help making a discrepancy between particular key hypotheses faster, \ie{} requiring less queries to the target \(\target\).
+Such strategies have been investigated by Köpf \etal{}~\cite{kopf_information_2007,kopf_automatically_2011} and Veyrat-Charvillon \etal{}~\cite{veyrat_adaptive_2010}, with promising results on simulations.
+An extension of those works involving the \emph{reinforcement learning}~\cite{sutton_reinforcement_1998} framework would be a promising track in the coming years.
+Yet, this remains beyond the scope of this thesis.
+
+\paragraph{Key Rank Estimation.}
+Whereas an attacker would be interested in recovering the whole key enumeration, an evaluator would just be interested in knowing how many keys should be enumerated according to the guessing vector in order to reach the right key, rather than actually enumerating them.
+Several works propose some ranking estimation methods~\cite{veyrat-charvillon_security_2013,ye_bounded_2014,glowacz_simpler_2015,martin_characterisation_2016,martin_two_2018,david_fast_2019,azouaoui_key_2019} allowing to save some time compared to a naive key enumeration.
+
+\paragraph{Other Ways to Partition.}
+Finally it is worth emphasizing that although they will not be investigated in this thesis, other divide-and-conquer strategies may be used, \eg{}, at a bit-wise level.
+More generally speaking, the choice of such a strategy depends on the nature of both the cryptographic primitive and the physical leakage occurred by the target.
+This may typically lead to the reduction on different key chunks.
+As an example, the \ark{} of the last round of AES can be targeted instead of the first one, with the same complexity by just swapping the ciphertexts with the plaintexts.
+In this case, the recovered key bytes form the last derived subkey from the \(\ks\) operation, rather than the ones of the master key directly.
+Yet, since the \(\ks\) is invertible for the \gls{aes}-128, this attack path equivalently leads to the master key recovery.
+An example of such an attack path is provided in \autoref{sec:aeshd}.

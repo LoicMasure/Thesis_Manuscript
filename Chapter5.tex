@@ -1,0 +1,84 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%									Chapter 5					      		   %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\chapter{Theoretical Aspects of Deep Learning Based Side-Channel Analysis}
+\label{chap:ches_20}
+\citationChap{
+	In Statistical Inference, nothing is more practical than a good theory.}{Vladimir Vapnik~\cite{vapnik_nature_2000}
+}
+This chapter is inspired from the results published in \textsc{Tches}'20 in collaboration with Cécile Dumas and Emmanuel Prouff~\cite{masure_comprehensive_2019}.
+\minitoc
+\newpage
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Introduction}
+    \label{sec:intro_ches}
+    \input{intro}
+
+\section{Model Training for Leakage Assessment}
+    \label{sec:leakage_assess}
+    \input{leakage_assess}
+
+\section{NLL Minimization is PI Maximization}
+    \label{sec:no_free_lunch}
+    This section is devoted to show that a deep learning model trained by minimizing the \gls{nll} loss fits with \autoref{leak_assess}.
+    \autoref{sec:loss_func} studies the link between the \gls{nll} loss and an information theoretic quantity called \emph{cross entropy}, that we will define hereafter.
+    Then, \autoref{sec:PI} will make a link between cross entropy and \gls{pi}.
+    Finally, \autoref{sec:div_term} discusses the gap between the \gls{mi} and a \gls{pi} estimated by training deep learning based models.
+    Eventually, it will be concluded that the \gls{mi} can be accurately estimated thanks to this approach.
+    \subsection{Recall on the Consistency of the NLL Loss with Cross Entropy}
+    \label{sec:loss_func}
+    \input{consistency}
+
+\subsection{The Link between Cross Entropy and Perceived Information}
+    \label{sec:PI}
+    \input{PI}
+
+\subsection{Tightness of the Obtained Bound}
+    \label{sec:div_term}
+    \input{tightness}
+
+\subsection{Partial Conclusions}
+    \label{sec:part_ccl}
+    \input{part_ccl}
+
+\section{Study on Simulated Data}
+    \label{sec:simus}
+    This section confronts the different propositions made so far with simulated experiments.
+    The aim of these experiments are:
+    \begin{itemize}
+        \item to show experimentally that the \gls{pi}, as computed in \autoref{eq:PI_eq_gen_loss}, is indeed a lower bound of the \gls{mi};
+        \item to show, in some cases where we can compute the exact \gls{mi} between a sensitive target variable and a leakage, that the latter lower bound is tight, so that the \gls{pi} gives an accurate estimation of the \gls{mi};
+        \item to see to what extent the commonly used counter-measures adapted for \gls{sca} have a practical impact on the training of \glspl{dnn}.
+    \end{itemize}
+    To this end, we first present the settings of our simulations in \autoref{sec:settings}, and we afterwards analyze them in \autoref{sec:analysis_simus}.
+
+\subsection{Settings of the Experiments}
+    \label{sec:settings}
+    \input{settings}
+
+\subsection{Analysis of the Results}
+    \label{sec:analysis_simus}
+    \input{analysis_simus}
+
+\section{Application on Experimental Data}
+    \label{sec:experiments}
+    So far, we have seen that \glspl{dnn} could reach the informational security bounds of a leakage in simulated experiments, thereby giving useful estimations for the developer.
+    This success did not rely on any prior knowledge on the leakage, but was achieved thanks to a simple \gls{mlp} with one hidden layer. 
+    To confirm these observations, we propose to complete the investigations by considering experimental leakage traces from the \textsf{Chip Whisperer} dataset presented in \autoref{sec:dataset_cw}.
+    \autoref{sec:exp_method} presents the methodology of our experiments, and \autoref{sec:results_exp} discusses their results.
+
+\subsection{Methodology}
+    \label{sec:exp_method}
+    \input{methodology}
+
+\subsection{Results and Discussions}
+    \label{sec:results_exp}
+    \input{results_exp}
+
+\subsection{Application on Public Datasets}
+    \label{sec:experiments_datasets}
+    \input{experiments_dataset}
+
+\section{Conclusion}
+    \label{sec:ccl_ches}
+    \input{ccl_ches}

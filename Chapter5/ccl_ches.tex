@@ -1,0 +1,42 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%                           CONCLUSION CHAPTER 5                               %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+In this chapter, we have given some theoretical and experimental reasons why the deep learning paradigm is suitable for evaluating implementations against \gls{sca} 
+from a worst-case scenario point of view, regardless the nature of the counter-measures.
+
+Contrary to what was commonly believed until the works of Picek \etal{}~\cite{picek_curse_2019}, the supervised classification approach is not theoretically grounded generally speaking as discussed in \autoref{chap:machine_learning}.
+Yet, deep learning based attacks still worked.
+The reason is that in the specific case where the \gls{nll} is used as a surrogate loss function, it turns out that the latter one is actually consistent with maximizing the \gls{pi}, solving the so-called Leakage Assessment Problem.
+Since the latter problem was argued to be sound with the profiled \gls{sca} optimization problem, we conclude that the choice of the \gls{nll} as a surrogate loss function is sound from an evaluation point of view, in the sense that it enables to accurately estimate a lower bound of the minimal number of queries required by an attacker provided with an optimal leakage model in order to successfully recover the secret key.
+
+Simulations and experiments verified that the \gls{pi} maximization via \gls{nll} minimization was an efficient method in order to estimate the \gls{mi} in several configurations, \ie{} on different architectures and with different types of counter-measures, including higher order secret-sharing, shuffling or de-synchronization through random delays.
+
+This leads to the takeaway messages of this chapter: the minimization of the \gls{nll} loss via a neural network model enables to give relevant estimations of the mutual information between a sensitive variable and the corresponding side-channel traces, thereby quantitatively measuring the impact of counter-measures (and their implementations) so that an evaluator can precisely assess whether the latter one stays sound or not.
+
+% About the HI
+A possible track of work following the study presented in this chapter could investigate how \gls{dl} could also be used to estimate the \gls{hi}, another information theoretic notion extending the \gls{mi} and the \gls{pi}.
+Bronchain \etal{} considered this metric as well in their paper at \textsc{Crypto}'19 and showed that it is an upper-bound of the \gls{mi} whereas the \gls{pi} is a lower bound.
+It would be interesting to know whether there is a way to \emph{minimize} the \gls{hi} of an approximate leakage model, in order to get an insightful confidence interval of the \gls{mi}, along with the \gls{pi}.
+Unfortunately, the computation of \gls{hi} would rely on generative models, beyond the scope of this thesis.
+Yet, investigating whether there are sound generative \gls{dl} models in an \gls{sca} context could be promising.
+
+
+\paragraph{Epilogue.}
+Since the release of our paper at \textsc{Ches} 2020, two recent works have addressed the problem of the choice of the loss function, following our line of works.
+
+Zhang \etal{} have proposed a slight variant of the \gls{nll}~\cite{zhang_novel_2020}.
+According to the authors, the latter loss function would have a major drawback when dealing with datasets for which the observed values of the sensitive variable are not uniformly distributed, \eg{}, if one targets \(\Z' = \hWeight(\Z)\) instead of \(\Z\).
+If the precise distribution \(\prob{\Z'}\) is unknown, then so is \(\entrop{\Z'}\), which means that one cannot compute the \gls{pi}.
+Nevertheless, one can still maximize it, since the unknown term does not depend on the considered model \(\MLmodel\) with respect to which the optimization is done.
+To circumvent this problem, the authors propose the \gls{cer}, which is the ratio between the \gls{nll} computed for the right key hypothesis, and the average of the \glspl{nll} computed when assuming any other wrong key hypotheses.
+They show that an attack is effective \gls{iff} this metric is below \(1\).
+Moreover, they claim that the lower the metric, the more efficient the attack, which is empirically verified on several public datasets.
+Yet, a formal proof of this trend still remains to be established.
+
+% Ranking loss
+Zaid \etal{} have recently embraced another approach when tackling the issue of the loss function, leading to proposing the so-called \emph{ranking} loss~\cite{zaid_ranking_2020}.
+Contrary to the \gls{nll} coming from the supervised classification task, the authors here take inspiration from another learning task, namely \emph{learning to rank}.
+By translating this task into the profiled \gls{sca} optimization framework, they show the soundness of their approach to maximize the \gls{sr}.
+
+Beyond being useful for estimating the \gls{sca} efficiency metric, the computation of the \gls{mi} could be a goal as itself for the evaluator~\cite{bronchain_leakage_2019}.
+Hence, Cristiani \etal{} recently extended a technique called \emph{Neural Estimation of the Mutual Information}, originally introduced by Belghazi \etal{}~\cite{belghazi_mine_2018}, in the aim to derive the best way to to estimate the \gls{mi} between \gls{sca} traces and a sensitive intermediate computation~\cite{cristiani_leakage_2020}.

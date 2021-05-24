@@ -1,0 +1,217 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%						MACHINE LEARNING THEORY					   			   %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Position of the Problem}
+\label{sec:pb_position}
+We stated in \autoref{sec:thm_heuser} that from an evaluator's point of view, it would be optimal to use the maximum likelihood distinguisher defined by \autoref{eq:mle_def}.
+Unfortunately, it requires to know the true conditional \gls{pmf} \(\prob{\Z \given \XXX}\), which is unknown in practice.
+Instead, the evaluator or the attacker can substitute the latter one with a model \(\MLmodel: \leakSpace \rightarrow \probSet{\sensVarSet}\), giving the following surrogate distinguisher:
+\begin{equation}
+	\MLMLEscore{\attackSet}{\MLmodel}[\key] = \sum_{i=1}^{\numTracesAttack} \log \MLmodel(\xxx_i)\left[\miniEncrypt{\p_i, \key}\right] \enspace , 
+	\label{eq:disting_learn}
+\end{equation}
+where \(\attackSet \eqdef \{(\xxx_1, \p_1), \ldots, (\xxx_{\numTracesAttack}, \p_{\numTracesAttack})\}\) is the attack set acquired on the actual target \(\target\) -- see \autoref{sec:problem_position}.
+
+We consider hereafter the framework of profiled attacks presented in \autoref{sec:profiled_attacks}: the attacker \(\attacker\) has a clone device \(\target'\) of the actual \gls{toe} \(\target\), on which he acquires the profiling dataset \(\trainSet \eqdef \{(\xxx_1, \z_1), \ldots, (\xxx_{\numTracesProf},\z_{\numTracesProf})\}\).
+The clone is behaving as an open sample, so the values \(\z_1, \ldots, \z_{\numTracesProf}\) of the sensitive intermediate variable targeted by the attacker during the profiling phase are known, contrary to the same values processed throughout the attack phase.
+Based on \(\trainSet\), the role of the profiling phase is, to build a \emph{sound} surrogate model \(\MLmodel: \leakSpace \rightarrow \probSet{\sensVarSet}\).
+Here, ``sound'' refers to the efficiency of an attack defined by \autoref{eq:eff_sr}.
+In the remaining of this thesis, we will denote by \(\fonction{\numTracesAttack}{\MLmodel, \succOrder, \beta}\) the efficiency of the attack using the distinguisher \(\MLMLEscore{\attackSet}{\MLmodel}\), following the definition given by \autoref{eq:disting_learn}, namely \(\fonction{\numTracesAttack}{\MLMLEscore{\attackSet}{\MLmodel}, \succOrder, \beta}\).
+Likewise, as in \autoref{sec:performance_metrics}, we may omit the mention to \(\succOrder\) and \(\beta\), implicitly set respectively to \(1\) and \(90~\%\), in order to lighten the notations.
+
+As a consequence, we may also refine the main goal of the evaluator emulating an attacker \(\attacker\) in view of assessing the worst-case attack scenario, as stated in \autoref{final_task}:
+\begin{problem}[Profiled \gls{sca} Optimization]
+	Given a profiling set \(\trainSet\), find the model \(\attacker(\trainSet)\) minimizing the \gls{sca} efficiency metric \(\MLmodel \mapsto \fonction{\numTracesAttack}{\MLmodel}\), as defined in \autoref{eq:eff_sr}.
+	\label{final_task_prof}
+\end{problem}
+
+We will see in the next section that the latter problem can be encompassed into the more general framework of \glsfirst{ml}.
+This point of view enables to better understand how to efficiently address \autoref{final_task_prof}.
+To this end, we first provide in the next section a clear definition of the term ``learning''.
+
+\subsection{Definition of a Learning Algorithm}
+The more  cited definition of \emph{learning} has been proposed by Mitchell in 1997~\cite{mitchell_machine_1997}:
+\begin{quote}
+	``A computer program is said to learn from experience E with respect to some task T and performance measure P, if its performance on T, as measured by P, improves with experience E.''
+\end{quote}
+Programming a machine to achieve a task by learning is particularly useful when the given task is too complex to be programmed by hand.
+We detail hereafter the different elements of the definition of learning in our profiled \gls{sca} context.
+
+\paragraph{The Task.}
+In the context recalled in \autoref{sec:pb_position}, the task of the attacker is to build a mapping \(\leakSpace \rightarrow \probSet{\sensVarSet}\).
+In machine learning, it is usual to precise the \emph{hypothesis class}, denoted by \(\hypoclass \subset \{\MLmodel:\leakSpace \rightarrow \probSet{\sensVarSet}\}\), from which the model is selected.
+A learning algorithm is not only defined by the hypothesis class \(\hypoclass\) from which it selects the \emph{best} model -- according to the defined performance measure -- but also by the method it uses to select the model -- \ie{} the algorithm as itself.
+
+\paragraph{The Performance Measure.}
+Likewise, \autoref{final_task_prof} directly provides the relevant performance measure in our context, namely the \gls{sca} efficiency metric \(\MLmodel \mapsto \numTracesAttack(\MLmodel)\).
+Contrary to the common sense, the performance is said to improve whenever the measure performance decreases.
+This convention is more generally adopted by the machine learning community, where the performance metric is usually called the \emph{loss}, in order to remove the ambiguity.
+Formally speaking, a loss function is a mapping:
+\begin{equation}
+	\decFonction{\ell}{\probSet{\sensVarSet} \times \sensVarSet}{\realSet_+}{\vNNOutput, \z}{\lossFunc{\vNNOutput, \z}} \enspace ,
+	\label{eq:loss_function}
+\end{equation}
+where \(\vNNOutput = \MLmodel(\xxx)\) would denote the output -- \ie{} a vector describing a \gls{pmf} here -- of the model \(\MLmodel\) returned by the learning algorithm for an input data \(\xxx\), and \(\z\) would denote the value that one expects the learned model to predict given \(\xxx\).
+
+\paragraph{The Experience.} 
+The experience describes the way data and information are accessed by the learning algorithm during learning.
+Two types of experience may be distinguished, \aka{} \emph{active} vs. \emph{passive}.%
+\footnote{
+	This terminology must not be confounded with a similar one introduced in p.~\pageref{ref_passive_active}.
+	In the latter one, the term ``active'' is often used for a scenario of physical attacks, \eg{} fault attacks, where the attacker attempts to perturb the behavior of the target device, in opposition to passive attacks such as \gls{sca} where the attacker only observes the target device.
+}
+In a passive experience, the learning algorithm is given some data collected by a third part which it has no way to interact with, \ie{} the process of data collection is independent from the learning algorithm.
+On the opposite, an active experience allows the learning algorithm to influence the data collection process.
+The latter type of experience covers the \emph{reinforcement} learning framework~\cite{sutton_reinforcement_1998}.
+Although beyond the scope of this thesis, this approach may be interesting in order to find relevant strategies%
+\footnote{
+	The exact term used in reinforcement learning is \emph{policy}.
+}
+of adaptive chosen-plaintext attacks, as mentioned in \autoref{sec:attack_scenario}.
+Nevertheless, the definition of our attack scenario implies that we consider only learning algorithms with passive experience.
+
+In the context of the profiling attack scenario described in \autoref{sec:profiled_attacks}, the experience is fully defined by the profiling set \(\trainSet\) of size \(\numTracesProf\).
+That is why we can say that the experience increases whenever \(\numTracesProf\) increases.
+Since the profiling set \(\trainSet\) contains the values \((\z_i)_i\) of the targeted intermediate computations corresponding to the acquired profiling traces -- referred as \emph{labels} in the \gls{ml} terminology, the learning is said to be \emph{supervised}.
+In a more restricted case, beyond the scope of this thesis, the learner is not assumed to know those labels, hence denoted as an \emph{unsupervised} learning.
+
+Although intuitive and simple, the definition given by Mitchell is not sufficient, since the notion of ``improvement'' in the definition is not precise enough.
+That is why, we complete it with the definition of learnability given by Shalev-Shwartz and Ben-David hereafter.
+
+\begin{definition}[{Learnability~\cite[Def.~3.4]{shalev-shwartz_understanding_2014}}]
+	\label{def:learnability}
+	A hypothesis class \(\hypoclass\) is \emph{learnable} with respect to an input data space \(\leakSpace\), an output data space \(\sensVarSet\), and a loss function \(\ell\), if there exists a learning algorithm%
+	\footnote{
+		We deliberately overlap the notation \(\attacker\) referring to the learning algorithm with the same notation addressing the attacker, since they represent the same entity in a profiling \gls{sca} scenario.
+	}
+	\(\attacker\) such that for every probability distribution over \(\leakSpace \times \sensVarSet\), when running the learning algorithm on a profiling set \(\trainSet\) of \(\numTracesProf = \card{\trainSet}\) \gls{iid} samples, the algorithm returns \(\attacker(\trainSet) \in \hypoclass\) such that:
+	\begin{equation}
+		\LossFunc[\XXX, \Z]{\attacker(\trainSet)} \probConv{\card{\trainSet}} \min_{\MLmodel \in \hypoclass} \LossFunc[\XXX, \Z]{\MLmodel} \enspace,
+	\end{equation}
+	where \(\LossFunc[\XXX, \Z]{\MLmodel} \eqdef \esper[\xxx, \z]{\lossFunc{\MLmodel(\xxx), \z}}\).
+\end{definition}
+In other words, the definition of ``learning'' refers to a convergence in probabilities to the best possible model, according to the loss function.
+Like every notion of convergence, one may define a notion of speed of convergence.
+In machine learning, this notion is also known under the name \emph{sample complexity}, that we define hereafter.
+\begin{definition}[{Sample Complexity~\cite[Sec.~3.2]{shalev-shwartz_understanding_2014}}]
+	The \emph{sample complexity} of a hypothesis class \(\hypoclass\) is the maximum convergence rate -- as defined by \autoref{eq:conv_rate} -- of the sequence \((\LossFunc[\XXX, \Z]{\attacker \left(\trainSet\right)})_{\numTracesProf}\) over the set of every probability distribution over \(\leakSpace \times \sensVarSet\).
+	\label{def:sample_complexity}
+\end{definition}
+In a nutshell, the sample complexity gives some clues about the required number of profiling traces so that the learning algorithm \(\attacker\) returns a model that is likely to provide a satisfying performance for the task it is assigned.
+
+
+\subsection{The Empirical Risk Minimization Paradigm}
+\label{sec:erm_principle}
+The definition of learnability states whether it is possible or not to find a learning algorithm.
+However, it does not give any clue about how to find such a learning algorithm.
+An intuitive and generic approach is to rephrase the problem by finding a model which, rather than minimizing the loss over the whole unknown joint distribution of \((\XXX, \Z)\), would minimize the loss \(\lossFunc{}\) over the samples from the profiling set only, \aka{} the \emph{training loss} denoted by \(\LossFunc[\XXX, \Z]{}\).
+That is:
+\begin{equation}
+	\LossFunc[\trainSet]{\MLmodel} \eqdef \frac{1}{\card{\trainSet}} \sum_{i=1}^{\card{\trainSet}} \lossFunc{\MLmodel(\xxx_i), \z_i} \enspace .
+	\label{eq:empirical_loss}
+\end{equation}
+This principle is known under the name of \glsfirst{erm}, and covers many situations such as linear regression, or maximum likelihood estimation.
+It translates the learning problem into a functional optimization problem -- \ie{} finding the model \(\MLmodel\) from \(\hypoclass\) minimizing the training loss -- that the attacker may directly address.
+
+
+\paragraph{Soundness of the \gls{erm} Principle.}
+The question arising when substituting \autoref{final_task_prof} with \gls{erm}, is whether the latter one is actually a learning algorithm, according to \autoref{def:learnability}.
+In other words, does one have the guarantee that the more profiling traces, the higher the performance metric of the obtained solution \(\attacker(\trainSet)\)?
+And if so, what is the required size of the profiling set in order to get a satisfying performance, according to \autoref{def:sample_complexity}?
+
+The Fundamental Theorem of Learning, that we present hereafter, aims at addressing this issue.
+It gives a necessary and sufficient condition on the hypothesis class \(\hypoclass\), for the \gls{erm} to be a learning algorithm.
+This condition relies on the so-called \gls{vc}-dimension of the considered hypothesis class \(\hypoclass\), a way to characterize its \emph{size}.
+The formal definition of the \gls{vc}-dimension is beyond the scope of this thesis, but will be briefly discussed after we introduce the following fundamental theorem.%
+\footnote{
+	The interested reader may refer to the book of Shalev-Shwartz and Ben-David~\cite{shalev-shwartz_understanding_2014} or to the book of Vapnik~\cite{vapnik_nature_1995}.
+}
+
+
+\begin{theorem}[Foundamental Theorem of Learning~\cite{vapnik_overview_1999,shalev-shwartz_understanding_2014}]
+	\label{thm:consistency}
+	Let \(\attacker\) be a learning algorithm and let \(\trainSet\) be a profiling set of size \(\card{\trainSet}\). 
+	Assume that \(\hypoclass\) is a hypothesis class of finite \gls{vc}-dimension.
+	Then:
+	\begin{equation}
+		\sup_{\MLmodel \in \hypoclass} \left\{\LossFunc[\XXX, \Z]{\MLmodel}- 
+		\LossFunc[\trainSet]{\MLmodel} \right\} \probConv{\card{\trainSet}} 0
+	\end{equation}
+	In particular, it follows that:
+	\begin{eqnarray}
+		\LossFunc[\trainSet]{\attacker(\trainSet)}
+		& \probConv{\card{\trainSet}}
+		& \min_{\MLmodel \in \hypoclass} \LossFunc[\XXX, \Z]{\MLmodel} \enspace ,
+		\label{eq:consist1} \\
+		\LossFunc[\XXX, \Z]{\attacker(\trainSet)}
+		& \probConv{\card{\trainSet}}
+		& \min_{\MLmodel \in \hypoclass} \LossFunc[\XXX, \Z]{\MLmodel} \enspace .
+		\label{eq:consist2}
+	\end{eqnarray}
+\end{theorem} 
+This result will be of great interest in \autoref{chap:ches_20}.
+
+The \gls{vc}-dimension implicitly impacts the sample complexity of the \gls{erm}: roughly speaking, the higher the \gls{vc}-dimension, the slower the convergence in \autoref{eq:consist1} and \autoref{eq:consist2}~\cite{vapnik_overview_1999}.
+Hence a set \(\hypoclass\) with finite \gls{vc}-dimension is necessary for the \gls{erm} to be sound.
+A brief discussion about the characterization of the \gls{vc}-dimension in our context will be proposed in \autoref{sec:pres_architectures}
+
+\paragraph{A Utopian Approach.}
+So far we have said that the \gls{erm} approach allows the attacker to transform the \gls{sca} optimization problem into a fully defined functional optimization problem.
+However, it now remains to get an algorithm able to solve this functional optimization problem.
+This is the major drawback of this approach: depending on the considered hypothesis class \(\hypoclass\), the optimization problem yield by the \gls{erm} approach may be \emph{hard} to solve.
+Instead, most of the time, one uses heuristics which are not always guaranteed to return the model that the \gls{erm} algorithm would return, as we will discuss in \autoref{sec:erm_hard} and \autoref{sec:challenge_optimization}.
+That is why one must make a discrepancy between a theoretical attacker \(\attacker(\trainSet)\) using the true \gls{erm} approach, and a practical attacker \(\tilde{\attacker}(\trainSet)\), that would use some heuristics.%
+\footnote{
+	Examples of heuristics will be given in the description of \glspl{dnn}.
+}
+
+
+\paragraph{Decomposition of Error Terms.}
+In view of all the elements of the \gls{ml} theory introduced so far in this chapter, it becomes of natural interest to study the final loss returned by our learning algorithm \(\tilde{\attacker}(\trainSet)\).
+This term can be decomposed into four parts, as follows:
+\begin{eqnarray}
+	\LossFunc[\trainSet]{\tilde{\attacker}(\trainSet)}
+	= & 
+	\LossFunc[\trainSet]{\tilde{\attacker}(\trainSet)} - \LossFunc[\trainSet]{\attacker(\trainSet)} & \textcolor{ceagray}{\geq 0}
+	\label{eq:err_opt} \\
+	+ &
+	\LossFunc[\trainSet]{\attacker(\trainSet)} -  \min_{\MLmodel \in \hypoclass}  \LossFunc[\XXX, \Z]{\MLmodel} & \textcolor{ceagray}{\leq 0}
+	\label{eq:err_est} \\
+	+ &
+	\min_{\MLmodel \in \hypoclass}  \LossFunc[\XXX, \Z]{\MLmodel} - \LossFunc[\XXX, \Z]{\MLmodelOpt} & \textcolor{ceagray}{\geq 0}
+	\label{eq:err_approx} \\
+	+ &
+	\LossFunc[\XXX, \Z]{\MLmodelOpt} & \textcolor{ceagray}{\geq 0} \enspace ,
+	\label{eq:bayes_error}
+\end{eqnarray}
+where \(\trainSet\) is the profiling set of traces introduced in \autoref{sec:profiled_attacks}, \(\MLmodel\) denotes an abstract model from the hypothesis class \(\hypoclass\) considered by the attacker, and \(\LossFunc[\XXX, \Z]{\MLmodel}\) denotes the expected value of the loss function over the joint distribution of \(\XXX, \Z\).
+
+% Bayes error
+The term \eqref{eq:bayes_error} denotes the so-called \emph{Bayes}' error, \ie{}, the minimal value of a loss achieved by the optimal solution to \autoref{final_task_prof}.
+This minimum value only depends on the nature of the loss function and on the unknown joint distribution, but does not depend on any choice from the learner/attacker.
+As the expected value of a non-negative random variable, the Bayes' error is itself non-negative.
+
+% Approximation error
+The term \eqref{eq:err_approx} corresponds to the \emph{approximation} error: this error is due to the choice of a restricted hypothesis class \(\hypoclass\) from which we select our model \(\MLmodel\) -- \eg{} \(\MLmodelOpt\) may not belong to the hypothesis class \(\hypoclass\) considered by the attacker.
+Since \(\LossFunc[\XXX, \Z]{\MLmodelOpt}\) is itself a minimum over a wider set of functions than \(\hypoclass\), it is always lower than \(\min_{\MLmodel \in \hypoclass}  \LossFunc[\XXX, \Z]{\MLmodel}\).
+Hence, the approximation error is always non-negative.
+
+% Estimation error
+The term \eqref{eq:err_est} corresponds to the \textit{estimation} error.
+It is the error due to the fact that we do not maximize the expected value of the loss -- as the true \gls{pmf} is unknown -- but rather its empirical estimation, \ie{}, the training loss computed over a finite set \(\trainSet\) of profiling traces.
+This error term is always non-negative.%
+\footnote{
+	Unless the attacker includes some inductive bias into the \gls{erm}, \eg{} with \emph{regularization} techniques, if he thinks that some solutions to the \gls{erm} would be likely to better generalize than some others.
+	The inclusion of dropout layers -- see \autoref{sec:pres_layers} -- is an example of inductive bias.
+}
+Moreover, according to the property of a learning algorithm given in \autoref{def:learnability}, this error term is supposed to decrease with the number of profiling traces.
+On the contrary, this error term increases with the \gls{vc}-dimension of the hypothesis class \(\hypoclass\)~\cite{vapnik_overview_1999}.
+
+% Optimization error
+The term \eqref{eq:err_opt}, \aka{} the \textit{optimization} error, appears when considering an attacker \(\trainSet \mapsto \MLmodelSGD{\trainSet}\) using a heuristic algorithm rather than the exact \gls{erm} approach.
+Since by definition, the theoretical attacker \(\attacker(\trainSet)\) minimizes the training loss, the optimization error is always non-negative.
+
+% Discussion
+We remark that each error term refers to a restriction in the capacity of an evaluator (optimal attacker, restricted attacker with finite hypothesis class, finite profiling set, heuristic for the \gls{erm}).
+That is why, in order to practically assess the quality of the model returned by the learning algorithm, it is interesting to emulate cases where such restrictions can be ignored, so that each error term can be evaluated separately.
+The work presented in \autoref{chap:ches_20} will be devoted to thoroughly discuss  each error term.

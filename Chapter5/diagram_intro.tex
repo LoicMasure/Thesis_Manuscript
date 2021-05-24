@@ -1,0 +1,29 @@
+\tikzset{
+	>=stealth',
+	%BASE STYLE
+	base/.style = {minimum height=1cm,
+		           minimum width=2cm,
+		           text centered},
+	%ROUNDED STYLE
+	rounded/.style = {base,
+                      rounded corners,
+                      text width = 3cm, node distance = 4cm}
+}
+\begin{tikzpicture}
+	\node (n0)  [rounded, fill=blue!25] {\gls{nll} loss};
+    \node (n1)  [rounded, fill=blue!25, right of = n0, node distance = 6cm] {\glsfirst{pi}};
+    \node (n3)  [rounded, fill=blue!25, below of = n0] {\(\numTracesAttackOpt(1, \beta)\) \\ \tiny see \autoref{eq:eff_sr}};
+	\draw[<->] (n0) -- node[above] {\tiny this chapter} (n1);
+	\node (n2)  [rounded, fill=blue!25, right of = n3, node distance = 6cm] {\glsfirst{mi}};
+	\draw[<->] (n1) -- node[right] {\tiny \cite{renauld_formal_2011,bronchain_leakage_2019}} (n2);
+	\draw[<->] (n2) -- node[below] {\tiny \cite{chesirey_best_2019}} (n3);
+    \draw[ceadarkgreen, dashed, <->] (n3) -- (n0);
+
+    % \node[circle, fill=ceadarkgreen!20, above right of = n3, node distance = 3cm] (opt) {\(\MLmodel^\star\)};
+    \draw[<->, dashed] (n3) -- node[midway, circle, fill=ceadarkgreen!25] (opt){\(\MLmodel^\star\)} (n1);
+
+    \path[->, dashed] (opt) -- node[right]{\tiny maximizes} (n1);
+    \draw[->, dashed] (opt) -- node[above right]{\tiny defines} (n2);
+    \path[->, dashed] (opt) -- node[above left]{\tiny defines} (n3);
+    % À finir si le temps me le permet...
+\end{tikzpicture}

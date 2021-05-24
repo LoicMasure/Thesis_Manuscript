@@ -1,0 +1,279 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%								DNNs										   %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+So far we have presented the \gls{ml} framework for a generic hypothesis class \(\hypoclass\).
+This framework is of particular interest for our profiled attacks scenario, since it encompasses the majority of the attacks presented so far.
+As an example, we can remark that \glspl{gta} may be considered as a particular hypothesis class.
+Indeed, it may be shown that the way the mean vectors and the covariance matrices are estimated from the profiling set actually follows the \gls{erm} principle~\cite{goodfellow_deep_2017}.
+
+The main interest in formalizing profiling attacks more generally as a machine learning problem, is that one is not necessarily restricted anymore to the limited number of leakage models presented so far in \autoref{sec:profiled_attacks}.
+That is why the \gls{sca} community started considering different hypothesis classes over the last few years, among the wide zoology of \gls{ml} algorithms, such as \gls{svm}~\cite{cortes_svm_1995} or random forest~\cite{breiman_random_2001,picek_performance_2018}.
+This section -- and more generally this thesis -- will be exclusively devoted to the particular hypothesis class of \glsfirstplural{dnn}.
+Nevertheless, the interested reader may refer to the comprehensive survey of Hettwer \etal{} about the use of every \gls{ml} approach to \gls{sca}~\cite{hettwer_applications_2020}.
+
+We briefly describe the \glspl{dnn} in \autoref{sec:desc_dnns}, and the different \emph{architectures} in \autoref{sec:pres_architectures}.
+We also present some of their useful properties, especially the \emph{Universal Approximation} theorem, in \autoref{sec:universal_approx_thm}, before detailing in \autoref{sec:implementing_dnns} how to implement them in practice.
+Finally, \autoref{sec:review_dl_sca} is devoted to review the use of \glspl{dnn} in \gls{sca}, over the recent literature.
+
+
+\subsection{General Description}
+\label{sec:desc_dnns}
+\glsfirst{dl} aims at constructing a function \(\MLmodel \colon \leakSpace \rightarrow \probSet{\sensVarSet}\) that takes a datum \(\xxx\) and outputs a \gls{pmf} over a finite domain, represented as a vector \(\vNNOutput\).
+The result can then be used for different tasks.
+For example, in a classification task the goal is to predict among a given number of mutually exclusive classes, the one which has been assigned to the input data \(\xxx\).
+The vector returned by the \gls{dnn} may then expresses scores depicting the preference to each class that the input data \(\xxx\) might stand for.
+The final prediction is made by returning the class for which the highest score has been assigned.
+The output \(\vNNOutput\) can also be used for soft decision contexts, which correspond more to \gls{sca} as the \gls{dnn} outputs on attack traces may be used as scores to feed a distinguisher.
+
+% General description
+In a very general way, a \gls{dnn} may be seen as a \gls{dag} of computation, where different functions may be applied at each node.
+Each function may be fixed by the operator, or may belong to a class of functions \(f_i(\cdot, \MLparam_i)\), each being typically fully described by real vectors \(\MLparam_i\), \aka{} \emph{parameters}.
+The shape of the \gls{dag} and the nature of the classes of functions is called the \emph{architecture} of the \gls{dnn}.
+
+
+\subsection{The Elementary Layers}
+\label{sec:pres_layers}
+Most of the time and in the remaining of this thesis,%
+\footnote{
+	Exceptions to this restriction are discussed in \autoref{sec:other_archi}, \eg{} with \gls{resnet} architectures.
+}
+the architecture is organized so that the \gls{dag} is a simple chain of nodes.
+In other words, the model is a sequence of compositions between several simpler functions called \emph{layers}.
+More precisely, this sequence generally alternates layers denoting linear operations with respect to each of their inputs -- hence called \emph{linear} layers, and non-linear functions, often referred as \emph{activation} layers.
+This section is devoted to introducing the different layers that we will use in this thesis, before presenting the general architectures in \autoref{sec:pres_architectures}.
+
+\paragraph{Dense Layers \(\linLayer_\linSize\).}%
+They consist in  applying to a vectorial input \(\xxx \in \realSet^D\) a matrix multiplication:
+\begin{equation}
+	\linLayer_\linSize(\xxx) = \randVect{M} \cdot \xxx \enspace ,
+\end{equation}
+where \(\randVect{M} \in \realSet^{D\times \linSize}\) denotes the \emph{weight} matrix, and \(\linSize\) denotes the \emph{size} of the dense layer.
+These weights are the trainable parameters of this layer.
+The term ``dense'' denotes the fact that when representing separately each entry of the output as a single node in the \gls{dag}, those nodes are all connected to all the nodes representing the entries of the input of the layer.
+
+\paragraph{Convolutional Layers \(\convLayer_{\ksize, \numFilters}\).}
+A convolution layer consists in computing a series of discrete convolutions between an input and one or several \emph{filters} -- \aka{} \emph{kernels}.
+We detail hereafter the meaning of the layer.
+
+Let \(\xxx\) be a 2D-array of size \((\traceLength, \dConv)\) denoting the input of a convolution layer.
+\(\dConv\) denotes the number of \emph{channels} in \(\xxx\).%
+\footnote{
+	This terminology encompasses the fact that a black-and-white picture has one channel, a stereo sound has two channels (left and right) and a colored picture has three channels (RGB).
+}
+In particular, for the first layer, \(\xxx\) coincides with the input trace, so \(\dConv=1\).
+Let also \(\vectObs{w}\) be a 3D-array of size \((\ksize, \dConv, \numFilters)\) denoting the set of \(\numFilters\) convolution filters of size \(\ksize\) to apply to the input signal.%
+\footnote{
+	We distinguish \(\numFilters\) denoting the number of filters in a convolutional layer from \(\K\), the random discrete variable denoting the secret key chunk to ultimately recover.
+}
+The output of the convolution is a 2D-array \(\convLayer_{\ksize, \numFilters}\) of size \((\traceLength - \ksize + 1, \numFilters)\) such that:
+\begin{equation}
+	\convLayer_{\ksize, \numFilters}(\xxx)[i,j] = 
+	\sum_{d=1}^{\dConv}
+		\sum_{m=0}^{\ksize-1}
+			\xxx[i+m,d] \cdot \vectObs{w}[m,d,j]
+	\enspace ,
+	\label{eq:conv_layer}
+\end{equation}
+for \(0 \leq i \leq \traceLength - \ksize, \enspace 1 \leq j \leq K\).
+
+% Learning parameters
+The parameters which can be adjusted with an \gls{erm} are the coefficients of the \(\numFilters\) filters.
+Therefore, there are \(\ksize \times \dConv \times \numFilters\) real parameters to learn, and \(\ksize\) and \(\numFilters\) are the \glspl{hp} defining the layer.
+Hence, we use the notation \(\convLayer_{\ksize, \numFilters}\) to describe such a convolution layer.
+
+
+% Discussion about invariants
+A convolution being a linear operation, it can be rephrased as a dense layer where the weights matrix has constraints decreasing the number of coefficients to learn compared to a regular dense layer~\cite[Sec.~9.1]{goodfellow_deep_2017}.
+One must remark that the convolution layer commutes with shifts of maximum size \(\ksize\), which is useful when one wants to encode the possible invariants of the input trace as an inductive bias of the hypothesis class.
+This is particularly of great interest against misalignment-based counter-measures, as shown by Cagli \etal{}~\cite{cagli_convolutional_2017}.
+
+
+\subparagraph{Management of the Side Effects.}
+As one may remark in \autoref{eq:conv_layer}, the output size along the time dimension of a convolution layer decreases from \(\traceLength\) to \(\traceLength - \ksize + 1\).
+It is often useful to maintain the time dimensionality constant through the convolution layer.
+To tackle this problem, the input \(\xxx\) may be \emph{padded} by one or several ranges of zeros, around the two edges of the input, so that the time dimensionality is artificially increased to \(\traceLength' = \traceLength + \ksize-1\).
+The usual convention imposes to pad the input with the same number of zeros in both sides, which then constrains the filter size \(\ksize\) to be odd.
+
+\paragraph{Pooling Layers \(\poolLayer_\pstride\).}
+An \emph{average} pooling layer is a mapping made of two steps.
+First, one applies a particular case of convolution layer, yet without any learning parameter.
+It considers constant filters of size \(\pstride\) with value \(\frac{1}{\pstride}\).
+In other words, this computes the average over a \emph{pool} of \(\pstride\) entries.
+Second, a \emph{sub-sampling} operation is applied, consisting in keeping only one entry in each pool.
+The \gls{hp} \(\pstride\) is called the pooling \emph{stride}, and fully defines the pooling layer, hence the notation \(\poolLayer_\pstride\) to denote such a pooling layer.
+A pooling layer of stride \(\pstride\) has the effect of dividing the time dimensionality of the output by \(\pstride\).
+As a consequence, it is less sensitive to shifts of maximum size \(\pstride\) compared to the input of the pooling layer, which is here again useful to encode inductive bias on the input traces.
+
+It is worth emphasizing that there exist other types of pooling layers, such as the \emph{max} pooling layer, consisting in keeping the maximum value of \(\xxx\) for each window of size \(\pstride\).
+This makes the pooling layer not linear anymore, yet throughout this thesis, we will only consider average pooling layers.
+
+\paragraph{Batch Normalization Layers \(\BNLayer\).}
+This type of layer has been introduced by Ioffe \etal{} at \textsc{Icml} 2015~\cite{ioffe_batch_2015}, and is generally inserted after each linear layer.
+According to the authors, the first intuition behind this layer is to avoid the \emph{internal covariate shift}, namely
+``the distribution of each layer’s inputs changes during training, as the parameters of the previous layers change.
+This slows down the training[\ldots]''
+
+To circumvent this problem, they propose to insert after each linear layer the following operation:
+\begin{equation}
+	\xxx' = \frac{\xxx - \vectObs{M}}{\sqrt{\vectObs{\Sigma}}} \cdot \vectObs{b} + \vectObs{a} \enspace ,
+\end{equation}
+where \(\xxx\) denotes the input, \(\xxx'\) denotes the output of same size, and \(\vectObs{M}, \vectObs{\Sigma}, \vectObs{a}, \vectObs{b}\) have also the same dimensionality -- \(\sqrt{\vectObs{\Sigma}}\) denoting the square root applied element-wise on \(\vectObs{\Sigma}\).
+\(\vectObs{M}\) and \(\vectObs{\Sigma}\) are respectively estimated according to the (element-wise) empirical mean and variance directly during the training, while \(\vectObs{a}\) and \(\vectObs{b}\) are learning parameters, \ie{}, they are both included in the parameter vector \(\MLparam\) to fit during the training loss minimization.
+
+Many empirical evidences of its efficiency have been emphasized through the past few years, hence the batch normalization layer has been successfully used in many \gls{dnn} architectures.
+Yet, the theoretical reasons behind this efficiency are still debated, and other arguments emphasize the effect of batch normalization on the training loss smoothness, rather than the internal covariate shift~\cite{santurkar_how_2018}.
+
+\paragraph{Dropout Layer \(\dropLayer_\dropQ\).}
+Dropout is a layer introduced by Srivastava~\cite{srivastava_dropout_2014}, aiming at decreasing the estimation error of a hypothesis class.
+
+Given an input layer \(\xxx\) of size \(m\), the dropout layer samples a random vector \(\vectObs{u}\) of same dimensionality, each entry independently following a Bernoulli law of parameter \(\dropQ \in [0,1]\).%
+\footnote{
+	See \autoref{sec:probas} for a description of the Bernoulli law.
+}
+The dropout layer outputs the element-wise product:
+\begin{equation}
+	\dropLayer_\dropQ(\xxx)[i] \eqdef \xxx[i] \times \vectObs{u}[i] \enspace 1 \leq i \leq m \enspace .
+\end{equation}
+Therefore, \(q\) is the \gls{hp} defining the layer.
+Dropout is known to be a way to control the estimation error by trading-off a bit of the approximation error~\cite[Sec.~7.12]{goodfellow_deep_2017}.%
+\footnote{
+	A dropout layer will be used in \autoref{sec:exp_method}.
+}
+
+\paragraph{Activation Layers.}
+The role of activation layers is to insert non-linear --more precisely non-polynomial -- functions in the architecture.
+The underlying reason will be quickly explained afterwards in \autoref{sec:pres_architectures} when we will introduce the \emph{universal approximation} theorem.
+Historically, activation layers were used to modelize the response of a neuron cell by the stimuli of several neighbor neuron cells.
+Throughout this thesis, we will use two types of activation layers.
+\begin{itemize}
+	\item \textbf{\gls{relu}:} It consists in the element-wise application of the \(\max\) real function
+	\begin{equation}
+		\fonction{\actLayer}{x} = \max(0, x) \enspace .
+		\label{eq:relu}
+	\end{equation}
+	\item \textbf{Softmax: } This function aims at normalizing a vector to make it fit a discrete \gls{pmf}
+	\begin{equation}
+		\fonction{\softmax}{\xxx}[i] \eqdef \frac{e^{\xxx[i]}}{\sum_{j} e^{\xxx[j]}} \enspace .
+	\end{equation}
+	The composition of a linear layer and a softmax is often referred as a softmax classifier in the \gls{ml} literature~\cite[Sec.~6.2.2.3]{goodfellow_deep_2017}.
+	Note that contrary to the \gls{relu}, the softmax layer is not applied element-wise, since an output entry depends on all the input entries.
+\end{itemize}
+There exist many other activation layers used so far in the \gls{dl} literature, especially those based on \emph{sigmoids} -- \ie{} with the shape of an `S', although beyond the scope of this thesis.
+
+
+\subsection{The Architectures}
+\label{sec:pres_architectures}
+Once we have introduced the building blocks of the \glspl{dnn}, we can now present all the architectures used in this thesis.
+
+\paragraph{Multi-Layer Perceptron.}
+The simplest architecture, called \gls{mlp}, consists in alternatively composing dense layers, batch norm layers, \glspl{relu} and a final softmax layer, in order to output a \gls{pmf}:
+\begin{equation}
+	\label{eq:vgg}
+	\MLmodel(\xxx) = \softmax \circ \linLayer_\linSize
+	\circ \left [\actLayer \circ \BNLayer \circ \linLayer_\linSize \right]^\numLayers
+	\circ \BNLayer(\xxx) \enspace ,
+\end{equation}
+where \(\numLayers \geq 1\) denotes the \emph{depth} of the \gls{mlp}.
+
+
+\subparagraph{The Universal Approximation Theorem.}
+\label{sec:universal_approx_thm}
+A remarkable result specific to \glspl{mlp}, known as the \emph{Universal Approximation} Theorem, states that when considering a \gls{l2} error as a loss function, the approximation error term \eqref{eq:err_approx} converges towards \(0\) when the number \(\linSize\) of neurons in the layers increases~\cite{petrushev_approximation_1998}.
+In other words, an \gls{mlp}, even with only one intermediate layer, can approximate a wide range of functions.
+The theorem only requires the activation function of the \gls{mlp} to be non-polynomial, which is the case for the \gls{relu}.
+Actually there exist many versions of the universal approximation theorem, relying on different notions of convergence, or on particular properties of the activation function of the neural network.
+The drawback of this result is that without any additional assumption on the function to approximate, the required number of neurons exponentially increases with the inverse of the approximation error.
+Hopefully, this negative result may be mitigated by increasing the depth of the \gls{mlp}, rather than the number of neurons on each layer~\cite{telegarsky_benefit_2016}.
+The interested reader may refer to the survey of Pinkus~\cite{pinkus_approximation_1999}.
+
+\subparagraph{The \gls{vc}-dimension of \glspl{mlp}.}
+As presented in \autoref{sec:erm_principle}, the \gls{vc}-dimension of an hypothesis class has an impact on the estimation error, and thereby the sample compexity.
+When considering the class of \glspl{mlp}, the \gls{vc}-dimension can be upper-bounded by a polynomial depending on the number of learning parameters, \ie{}, the weights~\cite[Sec.~20.4]{shalev-shwartz_understanding_2014}.
+In other words, with \glspl{dnn}, the more parameters to learn, the higher the estimation error.
+
+\paragraph{Convolutional Neural Networks.}
+In pattern recognition tasks involving signals such as time series, images or videos, some elementary deformations, such as random shifts, do not usually affect the information carried through the data.
+Instead of letting the \gls{erm} learn implicitly those invariants at the cost of a higher sample complexity, they can be explicitly encoded through the architecture.
+This is the main idea behind the introduction during the 1990's of \glspl{cnn} by LeCun and Bengio~\cite{bengio_globally_1993,lecun_word_1994}.
+By remarking that some typical patterns appeared in the weights of the dense layers, they suggested to replace those layers by convolutional and pooling layers.
+Indeed, thanks to the properties of convolution and pooling layers on small shifts, stacking those layers enable to better encode the semantic invariants of the input data, while decreasing the number of parameters to learn -- and so intuitively the sample complexity.
+
+
+\subparagraph{VGG-like Architecture.}
+The \gls{vgg}-like architecture has first been introduced by Simonyan \etal{}~\cite{simonyan_vgg_2015}, after winning the \gls{ilsvrc} in 2014.
+Its architecture is as follows:
+\begin{equation}
+	\softmax \circ \linLayer_{\card{\sensVarSet}} \circ [\actLayer \circ \linLayer_\linSize]^{n_1}
+	\circ [\poolLayer_\pstride \circ \actLayer \circ \BNLayer \circ \convLayer_{\ksize, \numFilters}]^{n_2} \circ \BNLayer \enspace ,
+	\label{eq:vgg_archi}
+\end{equation}
+where \(\convLayer_{\ksize, \numFilters}\) denotes a convolution layer made of \(\numFilters\) filters of size \(\ksize\), and \(\poolLayer_\pstride\) denotes a pooling layer of stride \(\pstride\).
+Furthermore, the composition \([\poolLayer_\pstride \circ \actLayer \circ \BNLayer \circ \convLayer_{\ksize, \numFilters}]\) is denoted as a convolutional \emph{block}.
+Likewise, \([\actLayer \circ \linLayer_\linSize]\) denotes a dense block.
+We note \(n_1\) (resp. \(n_2\)) the number of dense (resp. convolutional) blocks.
+
+\begin{remark}
+	\label{remark:2D_VGG}
+	More precisely, the \gls{vgg} architecture of a convolutional block is slightly different in the original paper: the convolution layer \(\BNLayer \circ \convLayer_{\ksize, \numFilters}\) inside the convolution block is replaced by a stack \([\BNLayer \circ \convLayer_{\ksize, \numFilters}]^{n_3}\) of \(n_3>1\) convolution layers.
+	The authors indeed suggest a recipe, behind the success of the \gls{vgg} architecture at the \gls{ilsvrc}.
+	This recipe may be summarized as follows: \emph{stack more convolution layers, with small filters}.
+	
+	The reason is that when dealing with images, to be able to capture patterns from a \(\traceLength \times \traceLength\) square, the stack of convolution layers must verify the following condition resulting from the side effects of successive convolution layers, as explained in \autoref{sec:pres_layers}:
+	\begin{equation}
+		\traceLength = n_3 (\ksize - 1) \enspace .
+	\end{equation}
+	When this condition holds, the number of learning parameters is \(n_3 \ksize^2 = \frac{\traceLength \ksize^2}{\ksize-1} \approx \traceLength \ksize\), which may be minimized by setting \(\ksize\) to small values and by increasing \(n_3\) accordingly.
+	\begin{figure}[H]
+		\centering
+		\begin{subfigure}{0.49 \textwidth}
+			\centering
+			\input{fig_layers}
+			\caption{\(n_3 = 2, \ksize=3\).}
+			\label{fig:2D_n_2}
+		\end{subfigure}
+		\begin{subfigure}{0.49 \textwidth}
+			\centering
+			\input{fig_layers_no_stack}
+			\caption{\(n_3 = 1, \ksize=5\).}
+			\label{fig:2D_n_1}
+		\end{subfigure}
+		\caption{A 2D receptive field of size  \(\traceLength \times \traceLength\), captured by two different settings.
+		Inspired from Dumoulin \etal{}~\cite{dumoulin_guide_2016}.}
+		\label{fig:layers_2D}
+	\end{figure}
+	An illustration is proposed in \autoref{fig:layers_2D}: on \autoref{fig:2D_n_2} two convolutional layers are applied to a \(5\times5\) patch, with filters of size \(3\times3\) for each layer, hence \(2 \times 3 \times 3\) filters weights to learn.
+	On the contrary, as depicted in \autoref{fig:2D_n_1}, by only using one layer, one must use \(5\times5\) filters to cover the same area.
+	This represents \(25\) filter weights to learn, \ie{}, more than by using two stacked layers.
+	Therefore, the convolution layers are believed to keep their capacity of expression approximately constant by covering the same area, while decreasing the number of learning parameters and so the sample complexity.
+	Hence the global trend consisting in increasing more and more the depth of \glspl{cnn} in a computer vision context over the past few years.
+\end{remark}
+
+% 1D case
+For 1D-data, such as \gls{sca} traces, the argument discussed in \autoref{remark:2D_VGG} does not hold anymore since the required number of learning parameters becomes \(n_3 \ksize = \traceLength \frac{\ksize}{\ksize-1} \approx \traceLength\) rather than \(\traceLength \ksize\), as depicted on the two examples on \autoref{fig:layers_1D}.
+In other words, no matter the filter size chosen, the number of filter weights to learn remains globally constant, so stacking more convolutional layers does not seem necessary anymore; at least not for the reason developed in \autoref{remark:2D_VGG}.
+\begin{figure}[h]
+	\centering
+	\begin{subfigure}{0.49 \textwidth}
+		\centering
+		\input{fig_layers1D}
+		\caption{\(n_3 = 2, \ksize=3\).}
+	\end{subfigure}
+	\begin{subfigure}{0.49 \textwidth}
+		\centering
+		\input{fig_layers1D_no_stack}
+		\caption{\(n_3 = 1, \ksize=5\).}
+	\end{subfigure}
+	\caption{A 1D receptive field of size \(\traceLength=5\), captured either by one or two convolution layers.
+	Inspired from Dumoulin \etal{}~\cite{dumoulin_guide_2016}.}
+	\label{fig:layers_1D}
+\end{figure}
+Benadjila \etal{} empirically confirmed that it was not necessary to stack more than \(n_3=1\) layer inside a convolution block~\cite{prouff_study_2018} for an \gls{sca} context.
+That is why in the remaining of this thesis, we will keep the \gls{vgg} architecture such as described in \autoref{eq:vgg_archi}.
+However, the discussion concerning the ideal filter size remains open, depending on the context.
+In particular, we will discuss this setting in \autoref{chap:dl_sca_practice}.
+
+
+\subparagraph{Other \gls{cnn}-Based Architectures.}
+\label{sec:other_archi}
+Beside the \gls{vgg} architecture, the \gls{dl} community has seen the emergence of many other types of architectures, such as GoogleNet~\cite{szegedy_deeper_2015}, Inception~\cite{szegedy_inception_2015}, \gls{resnet}~\cite{he_deep_2015}, DenseNet~\cite{huang_densely_2016}, \etc{}
+The study of those architectures are yet beyond the scope of this thesis, although some of them start to be used in \gls{dl}-based \gls{sca}~\cite{zhou_deep_2019,gohr_efficient_2020} and some of them will be briefly discussed in \autoref{chap:dl_sca_practice}.

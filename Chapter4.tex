@@ -1,0 +1,55 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%									Chapter 4								   %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\chapter{Deep Learning for Side-Channel Analysis}
+\label{chap:machine_learning}
+\citationChap{
+	If someone can explain every phenomenon, his explanations are worthless.}{Shalev-Shwartz and Ben-David~\cite{shalev-shwartz_understanding_2014}
+}
+\minitoc
+\newpage
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Introduction
+We have presented the \gls{sca} framework in \autoref{chap:sca}, and the profiling attacks in particular.
+Indeed, the profiling phase in our considered attack scenario aims at leveraging the access to the traces measured on the clone device in order to improve the modelization of the leakage behavior of the target device.
+We will see in this chapter that the latter process may be encompassed into the field of machine learning.
+This chapter is devoted to introduce the necessary notions of this field to discuss the use of \gls{dl}-based \gls{sca} later in this thesis.
+
+% Plan of this chapter
+In \autoref{sec:theory_ml} we present the theoretical notions of \gls{ml}.
+Then, \autoref{sec:dnns} and \autoref{sec:implementing_dnns} briefly recall the main principles of \gls{dl}, before we propose a review of its use in \gls{sca} in \autoref{sec:review_dl_sca}.
+This will serve as a way to legitimate the outcomes of our research through this thesis in the next chapters.
+
+\section{The Statistical Learning Theory}
+    \label{sec:theory_ml}
+    \input{theory_ml}
+
+\section{The Neural Networks Class Hypothesis}
+    \label{sec:dnns}
+    \input{dnns}
+
+\section{Implementing the ERM with Neural Networks}
+    \label{sec:implementing_dnns}
+    \input{implem_erm_dnn}
+
+\section{An Overview of the Literature}
+    \label{sec:review_dl_sca}
+    \input{review_dl_sca}
+
+\section{Conclusion}
+    The machine learning framework enables to extend the leakage modelization in a profiling attack scenario to much more powerful hypothesis classes, which has been at the origin of new recent milestones in \gls{sca}.
+    Nevertheless, in view of the current state of the art, we are today in an uncomfortable situation.
+    Indeed, the replacement of the Profiled \gls{sca} Optimization Problem -- \ie{} \autoref{final_task_prof}, so far tackled classical profiling attacks such as \glspl{gta}, by the Supervised Classification Problem -- \ie{} finding a model maximizing the accuracy defined by \autoref{eq:acc_charac}, thanks to \glspl{dnn}, shows promising efficiency gains.
+    Nevertheless, several recent papers question the theoretical soundness of the latter problem substitution~\cite{cagli_convolutional_2017,picek_curse_2019}.
+    This situation prevents the \gls{sca} community to get a clear picture of the potential impact of \gls{ml} and \gls{dl}, especially from the developers' perspective.
+    Indeed, though an attacker only needs to know an efficient practical approach to train a \gls{dnn}, a developer needs a theoretically grounded approach to be able to give the best security bounds on the complexity of mounting a profiling attack, especially when the implementation is protected by counter-measures.
+
+    More specifically, through the review of the deep learning approach and the literature review, we have emphasized several caveats which should be addressed by the \gls{sca} community:
+    \begin{itemize}
+        \item How can one prove that the underlying optimization problem materializing the training phase is a theoretically sound approach for \autoref{final_task_prof}, beyond the recent empirical success?
+        This requires to address the issue of choice of the loss function, and the study of the optimization error yield by the \gls{sgd} or its variants.
+        \item How far can deep learning go to approximate the true leakage model, even in presence of counter-measures?
+        Said equivalently, is there any sound \gls{dl}-oriented counter-measure which could protect the implementations of cryptographic primitives against this threat?
+        \item How can an evaluator get a clear understanding of what happens during the profiling phase with \glspl{dnn}, in order to draw a fair diagnosis of the device under evaluation?
+    \end{itemize}
+    Our work in the remaining of this thesis aims at grounding the use of \glspl{dnn} in the \gls{sca} context, by addressing those issues in the next three chapters.

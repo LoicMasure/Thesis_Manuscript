@@ -1,0 +1,173 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%                                   MASKING                                    %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Random Data Encoding}
+\label{sec:masking}
+\paragraph{Principle of Secret-Sharing.}
+The first idea introduced so far to protect devices against \gls{sca} was to substitute the direct use of sensitive intermediate computations with a \emph{secret-sharing} of those computations.
+It gathers lots of techniques, investigated under several names over the past \(20\) years, such as \emph{duplication}, \emph{masking}, \emph{blinding}%
+\footnote{
+    This term is specifically used for implementation of asymmetric cryptographic primitives.
+}
+or \emph{random encoding}.
+We will briefly review those techniques.
+\begin{definition}[Encoding]
+    An \(\nShares\)-encoding of a variable \(\z\) representing the intermediate state of a computation, is a tuple \((\z_0, \ldots, \z_{\nShares-1})\) of size \(\nShares\) such that there exists a \emph{decoding} function verifying:
+    \begin{equation}
+        \fonction{\mathsf{Dec}}{\z_0, \ldots, \z_{\nShares-1}} = \z.
+    \end{equation}
+\end{definition}
+
+\begin{definition}[Secret-Sharing~\cite{amos_survey_2011}]
+    \label{def:secret_sharing}
+    Let \(\order \leq \nShares+1\).
+    An \emph{\((\nShares, \order)\)-secret-sharing} of the random variable \(\Z \in \sensVarSet\) is an \(\nShares\)-encoding verifying the two following properties:
+    \begin{enumerate}
+        \item For any subset \(\mset{I}_{\order+1} = (i_1, \ldots, i_{\order+1}) \subset \llbracket 0, n-1 \rrbracket\) of size \(\order+1\), there exists a decoding function verifying
+        \begin{equation}
+            \fonction{\mathsf{Dec}_{\mset{I}_{\order+1}}}{\Z_{i_1}, \ldots, \Z_{i_{\order+1}}} = \Z \enspace .
+            \label{eq:prop_1_ss}
+        \end{equation}
+        \item For any subset \(\mset{I}_\order = (i_1, \ldots, i_{\order}) \subset \llbracket 0, n-1 \rrbracket\) of size \(\order\), the secret variable \(\Z\) and the \(\order\)-tuple of random variables \(\Z_{i_1}, \ldots, \Z_{i_{\order}}\) are independent,%
+        \footnote{
+            This condition may be relaxed for the so-called \emph{non-perfect} secret-sharing.
+            However, this is not used in this thesis and the interested reader may refer to the survey of Beimel~\cite{amos_survey_2011}.
+        }
+        that is:
+        \begin{equation}
+            \prob{\Z \given \Z_{i_1}, \ldots, \Z_{i_{\order}}} = \prob{\Z} \enspace .
+            \label{eq:prop_2_ss}
+        \end{equation}
+    \end{enumerate}
+\end{definition}
+\begin{remark}
+    It is straightforward to show that \autoref{eq:prop_1_ss} holding for any set of size \(\order\) implies that it also hodls for any set of size strictly greater than \(\order+1\).
+    Likewise, \autoref{eq:prop_2_ss} holding for any subset of size \(\order\) implies that it also holds for any subset of size strictly lower than \(\order\).
+\end{remark}
+%
+The parameter \(\order\) is called the \emph{order} of security induced by the secret-sharing. 
+We call \emph{scheme} a set of design rules enabling to:
+\begin{enumerate}
+    \item compute a tuple \((\Z_0, \ldots, \Z_{\nShares-1})\) which is a \((\nShares, \order)\)-secret-sharing of a sensitive random variable \(\Z\),
+    \item  propagate the encoding through the different elementary operations of a cryptographic primitive.
+\end{enumerate}
+The goal of a developer is to find a scheme ensuring the given security requirements while minimizing the runtime and memory overhead due to the scheme.
+We will discuss these aspects while presenting the main schemes used so far in the literature. 
+
+\paragraph{Group Based Encodings.}
+At first sight, finding an encoding function may look non trivial.
+Hopefully, there exists a generic way to implement secret-sharing schemes: if there is an inner operator \(\gplaw: \sensVarSet^2 \rightarrow \sensVarSet\) such that \((\sensVarSet, \gplaw)\) is a group, then one may consider the scheme given in \autoref{algo:group_scheme}.
+\begin{algorithm}
+    \centering
+    \caption{Secret-sharing scheme based on a group operator}
+    \begin{algorithmic}
+        \Require \(\Z \in \sensVarSet\), \(\$\): \gls{prng}
+        \Ensure \(\Z_0, \ldots, \Z_{\nShares-1}\) is an \((\nShares, \nShares-1)\)-secret-sharing
+        \State \(\Z_0 \gets \Z\)
+        \For{\(i=1\) to \(\nShares-1\)}
+            \State \(\Z_i \gets \$\)
+            \State \(\Z_0 \gets \Z_0 \gplaw \Z_i\)
+        \EndFor
+    \end{algorithmic}
+    \label{algo:group_scheme}
+\end{algorithm}
+
+The first scheme introduced so far is the \emph{Boolean} scheme, which has been proposed by Goubin \etal{} at \textsc{Ches}'99~\cite{goubin_duplication_1999} and Chari \etal{} at \textsc{Crypto}'99~\cite{chari_towards_1999}.
+It considers the addition \(\plusgf\) in \(\gf{2}{8}\) as a group operator, which is nothing but the bit-wise \verb+xor+ between two bytes,%
+\footnote{
+    See \autoref{sec:disc_math}.
+}
+hence the name ``Boolean''.
+Other group laws have also been proposed: the \emph{arithmetical} secret-sharing considers the modular addition \(+\) over \(\zSet_n\), and has been introduced by Messerges \etal~\cite{messerges_arithmetic_2000}, the \emph{multiplicative} secret-sharing uses the field multiplication \(\multgf\) between non-null elements in \(\gf{2}{8}\) and has been first used by Golic \etal{}~\cite{golic_multiplicative_2002}.
+The reason to prefer one group law from another is that depending on the cryptographic primitive, the sharing may be more or less easy to propagate through the elementary operations.
+In particular, it is trivial to apply an elementary operation which is \gls{commut} with the considered group law: it suffices to apply the operation on each share separately.
+As a consequence, any cryptographic primitive made of elementary operations commuting with a group law can be protected by a \(\order\)-th order secret-sharing with a linear complexity with \(\order\).
+As an example for \gls{aes}, the operations \(\ark\), \(\sr\), \(\mc\) commute with the group law \(\plusgf\) of the \gls{aes} field \(\gf{2}{8}\) but the \(\sub\) operation does not.
+Similarly, the power function in the latter operation commutes with the field multiplication \(\multgf\) in \(\gf{2}{8}\) provided that the shares are non-null.
+We see here that all the operations of the \gls{aes} do not commute with the same group law, which implies an important negative result: there is no trivial way to implement a secret-sharing scheme for this cryptographic primitive -- at least based on group laws.
+We see hereafter how to cope with this difficulty.
+Since except for \(\sub\), every other elementary operation of \gls{aes} commutes with the addition \(\plusgf\) in \(\gf{2}{8}\), the idea is to keep a Boolean scheme anyway, to propagate the sharing through the commutative operations, and to find a way to propagate the encoding through the \(\sub\) operation.
+Several methods have been proposed in the literature that we briefly review hereafter.
+
+The first idea simply consists in proposing ways to switch between different schemes during the execution of the algorithm, so that at any time during the operation, the sensitive target variables are always shared according to a scheme commuting with the next elementary operation.
+This line of works has been initially considered by Genelle \etal{}~\cite{genelle_secure_2010}, and further improved by Bettale \etal{}~\cite{bettale_improved_2018}.
+By switching from a Boolean secret-sharing to a multiplicative one just before the \(\sub\), and switching back to Boolean secret-sharing after the power function, we circumvent the difficulty of the encoding propagation through the \(\sub\).
+Unfortunately, the switching operations have a runtime complexity of \(\mathcal{O}(\order^2)\), which mitigates the advantages of having a \gls{commut} secret-sharing with the power function.
+
+The second idea is known as \emph{table re-computation}~\cite{akkar_implementation_2001,prouff_generic_2007}.
+It is widely used for operations relying on \glspl{lut}.%
+\footnote{
+    In the particular case where the \(\Sbox\) may be randomly set, table re-computation might be the only working method.
+}
+We briefly describe its principle in the case of a \((2,1)\)-secret-sharing based on a generic group law \(\gplaw\), although it can be extended without loss of generality to higher-orders~\cite{coron_high_order_2018}.
+It consists in initially drawing a pair of random elements \(\rin, \rout \in \sensVarSet\), and based on the initial \gls{lut} \(T\), a modified table \(\widetilde{T}\) is generated, such that:
+\begin{equation}
+    \widetilde{T}[\rin \gplaw \Z] = \rout \gplaw T[\Z].
+\end{equation}
+Later in the algorithm, when one needs to apply \(T\) to a \((2,1)\)-secret-sharing of a secret variable \(\Z\), it suffices to apply \autoref{algo:table_recomputation}.
+Coron investigated the extension of this scheme to higher-order~\cite{coron_higher_2014}.
+
+\begin{algorithm}
+    \centering
+    \caption{Propagation of a secret-sharing through a \gls{lut}}
+    \begin{algorithmic}
+        \Require \(A_0 = \Z \gplaw \M, \M \in \sensVarSet\)
+        \Ensure \(A_3, \M\) is a \((2, 1)\)-secret-sharing of \(T[\Z]\), \(A_1, A_2, A_3\) independent from \(\Z\)
+        \State \(A_1 \gets \rin \gplaw A_0 \gplaw \M^{-1}\)
+        \State \(A_2 \gets \widetilde{T}[A_1]\)
+        \State \(A_3 \gets \rout^{-1} \gplaw A_2 \gplaw \M\)
+    \end{algorithmic}
+    \label{algo:table_recomputation}
+\end{algorithm}
+
+The third idea is to exploit the algebraic properties of the \(\Sbox\), as proposed by Rivain and Prouff~\cite{rivain_provably_2010}.
+They remark that the non-linear part of the \(\Sbox\) -- namely the raising to the power \(254\) as recalled in \autoref{sec:desc_aes} -- can be decomposed into a sequence of few field multiplications and (linear) raisings to powers of the form \(s^{2^p}\)~\cite[Lem.~5.3.4]{terras_2018}.
+It turns out that the latter operations also commute with the field addition in \(\gf{2}{8}\).
+The problem can then be reduced to finding an implementation that propagates the secret-sharing through the remaining field multiplications -- which are not of the form \(\sensValue^{2^p}\).
+This can be done by extending to the Rijndael field \(\gf{2}{8}\) the so-called \gls{isw} scheme~\cite{isw_03}, originally computing field multiplications over the smaller field \(\gf{2}{}\) for a Boolean secret-sharing at any order.
+It results in a global Boolean scheme with complexity \(\mathcal{O}(\order^2)\).
+
+\paragraph{Beyond Group Law Based Encodings.}
+We have seen a generic principle allowing to derive simple secret-sharing schemes based on group laws.
+The literature in \gls{cryptography} however proposes many more ways to change the encoding of a sensitive information in a secured way.
+
+% Affine masking
+Von Willich has first proposed the combined use of Boolean and multiplicative group laws into a so-called \emph{affine} scheme~\cite{willich_technique_2001}.
+This has been further investigated by Fumaroli \etal{}~\cite{fumaroli_affine_2010}.
+More precisely, the bytes of the \gls{aes} state carrying the sensitive variable \(Z\) are shared into \(\alpha, \beta\), and \(\alpha \multgf \Z \plusgf \beta\), where \(\alpha \in \sensVarSet\backslash\{0\}\), and \(\beta \in \sensVarSet\) are randomly drawn.
+The interest of the scheme relies on an improved security compared to a second order Boolean scheme at the cost of a runtime overhead close to that obtained for a first-order Boolean scheme.
+However, the affine scheme has only been proposed for a specific order, contrary to group based schemes, potentially usable for any order \(\order\).
+
+% Polynomial masking
+The so-called \emph{Shamir's} secret-sharing scheme, initially introduced in 1979~\cite{shamir_how_1979}, may also be used to share a sensitive intermediate computation.
+It has first been investigated simultaneously by Prouff \etal{} and Goubin \etal{} at \textsc{Ches} 2011~\cite{prouff_higher_2011,goubin_shamir_2011}.
+The scheme enables to generate a \((\order+1, \order)\)-sharing of a sensitive intermediate variable \(\Z\) for any order \(\order\).
+The principle is as follows.
+One first defines a polynomial \(P\) of degree at most \(\order+1\), whose coefficients are randomly drawn from \(\gf{2}{n}\) and such that the constant coefficient verifies \(P(0) = \Z\).
+One then draws \(\order+1\) random public points \(\alpha_i \in \gf{2}{n}\).
+The \(\order+1\) shares are finally given by the evaluation \(P(\alpha_i)\) of the random polynomial over the public points.
+According to the Lagrange interpolation, one is ensured that a necessary and sufficient condition to recover \(\Z\) is to know the whole polynomial, \ie{} the \(\order+1\) shares \((P(\alpha_i))_{i \in \llbracket 1, \order+1 \rrbracket}\).
+
+
+% Inner product
+The \emph{inner-product} scheme, introduced by Dziembowski \etal{}~\cite{dziembowski_leakage_2012,goldwasser_howto_2015}, then improved~\cite{balash_consolidating_2017} and even generalized to code-based schemes~\cite{wang_efficient_2020,guilley_optimizing_2020}, follows a similar idea.
+It consists in defining two vectors of random variables \(\randVect{L}\) and \(\randVect{R}\), each made of \(\order\) elements from \(\gf{2}{n}\), such that the inner product \(\langle \randVect{L}, \randVect{R} \rangle \eqdef \bigoplus_{i=1}^\order \randVect{L}[i] \multgf \randVect{R}[i] = \Z\), where \(\Z \in \gf{2}{n}\) is the sensitive variable to protect.
+The vector \(\randVect{L}\), although randomly drawn, is typically let publicly known whereas the shares from \(\randVect{R}\) are supposed to be secret.
+
+
+\paragraph{Soundness of Random Data Encoding}
+\label{sec:soundness_masking}
+A \((\nShares, \order)\) secret-sharing is provably secure against any attack involving less than \(\order\) shares, since according to \autoref{def:secret_sharing}, no subset of less than \(\order\) shares carry information about the sensitive shared variable \(\Z\).
+This result implies for example that uni-variate attacks such as \glspl{cpa} cannot succeed against an implementation protected with a \(\order\)-th order scheme -- for \(\order \geq 1\) -- as is, and that a pre-processing step such as the one described in \autoref{sec:characterization} is necessary.
+Nevertheless, this does not fit the threat model presented in \autoref{sec:attack_scenario} where the attacker \(\attacker\) has access to noisy observations of all the shares, since they are supposed to leak through the acquired traces from the attack set \(\attackSet\).
+In other words, this does not guarantee that any attacker is prevented from succeeding an \gls{sca} against the protected target.
+Hopefully, it has been recently shown in a series of papers, extending the seminal work of Chari \etal{}~\cite{chari_towards_1999}, that secret-sharing schemes remain theoretically \emph{sound} against \gls{sca}.
+Informally, this means that for the cost of a polynomial growth in the performance overhead, the number of queries \(\numTracesAttackOpt\) required for an optimal attacker to recover the secret key would be lower bounded by \(\mathcal{O}\left(\sigma^\order \right)\), where \(\sigma\) is a parameter denoting the level of noise present in the traces for each of the shares, \eg{}, the standard deviation~\cite{prouff_masking_2013,duc_unifying_2019,duc_making_2019,dziembowski_optimal_2016,prest_renyi_2019}.
+% Common ingredient: noise amplification
+In a nutshell, the proofs use a common ingredient at the cornerstone of the secret-sharing soundness: the \emph{noise amplification} effect.
+Indeed, if a scheme relies on a group operation, then the \gls{pmf} of the sensitive variable, recombined from the \gls{pmf} of each share separately, may be seen as a discrete convolution operation.
+Intuitively, convolutions are known to \emph{smoothen} any function or distribution, provided that the initial shares' \glspl{pmf} are noisy \emph{enough}.
+This smoothen effect is the source of noise amplification.%
+\footnote{
+    The interested reader may find more thorough discussion about the noise amplification effect in \autoref{chap_app:noise_ampli}.
+}

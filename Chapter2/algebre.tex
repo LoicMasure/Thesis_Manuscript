@@ -1,0 +1,12 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%                       RECALLS IN DISCRETE MATH                               %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\label{sec:disc_math}
+In this thesis, \gls{gfpn} denotes the \emph{finite field} of \(p^q\) elements.
+For the representation of this field, the specifications of the \gls{aes} consider the set of polynomials with coefficients in \(\zSet_p\), whose addition (denoted by \(\plusgf\)) and multiplication (denoted by \(\multgf\)) are done modulo an irreducible polynomial of degree \(q\).
+The parameter \(p\), necessarily prime, is called the \gls{characteristic} of the field.
+In this thesis, we will only be interested in the \emph{Rijndael field} \(\gf{2}{8} = \mathbb{Z}_2[X] / P(X)\), where \(P(X) = X^8+X^4+X^3+X+1\), on which all the AES operations are defined.
+Its \gls{characteristic} being \(2\), it has two consequences.
+First, the polynomial coefficients are binary.
+Since any polynomial is fully represented by its coefficients, any element in \gf{2}{8} can be seen as a byte value.
+Second, the addition between two polynomials being nothing but the element-wise addition of their coefficients in \(\zSet_2\), the field addition \(\plusgf\) coincides with the bit-wise \verb+xor+ operation between two bytes, and thereby the addition coincides with the subtraction.

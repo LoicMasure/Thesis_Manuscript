@@ -1,0 +1,37 @@
+\tikzstyle{block} = [rectangle, draw, fill=ceablue!20, text width=8em, text centered, rounded corners, minimum height=2em, node distance = 1cm]
+\tikzstyle{decision} = [diamond, draw, aspect=2.5, fill=ceablue!20, text width=4.5em, text badly centered, node distance=1.5cm, inner sep=0pt]
+\tikzstyle{line} = [draw, -latex']
+\begin{tikzpicture}
+    \node[block, fill=ceadarkred!20] (pt) {Plaintext};
+    \node[block, fill=ceadarkred!20, left of = pt, node distance = 5cm] (key) {Key};
+    \node[block, below of = pt] (ark){\ark{}};
+
+    \node[block, below of = ark] (sb) {\sub{}};
+    \node[block, below of = sb] (sr) {\sr{}};
+    \node[block, below of = sr] (mc) {\mc{}};
+    \node[block, below of = mc] (ark2) {\ark{}};
+    \node[block, left of = ark2, node distance = 5cm] (ks) {\ks{}};
+    \node[decision, below of = ark2] (nRound) {\(n = N\)?};
+    \node[block, below of = nRound, node distance=2cm] (sb2) {\sub{}};
+    \node[block, below of = sb2] (sr2) {\sr{}};
+    \node[block, below of = sr2] (ark3) {\ark{}};
+
+    \node[block, fill=cealime!20, right of = mc, node distance = 5cm] (npp) {\(n \leftarrow n+1\)};
+
+    \path[line] (pt) -- (ark);
+    \path[line] (key) |- (ark);
+    \path[line] (nRound) -| node[midway, fill=white]{No} (npp);
+    \path[line] (npp) |- (sb);
+    \path[line] (ark) -- (sb);
+    \path[line] (sb) -- (sr);
+    \path[line] (sr) -- (mc);
+    \path[line] (mc) -- (ark2);
+    \path[line, dashed] (key) -- (ks);
+    \path[line] (ks) -- (ark2);
+    \path[line] (ark2) -- (nRound);
+    \path[line] (nRound) -- node[midway, fill=white] {Yes} (sb2);
+    \path[line] (sb2) -- (sr2);
+    \path[line] (sr2) -- (ark3);
+    \path[line, dashed] (ks) |- (ark3);
+    
+\end{tikzpicture}

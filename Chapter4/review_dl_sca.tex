@@ -1,0 +1,80 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%                       REVIEW DEEP LEARNING FOR SCA                           %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+The past few years have seen the emergence of contributions on \gls{sca} using more and more \gls{dl} techniques.
+The community committed to investigate several models leading to practical attacks against several implementations. 
+The very first works came from Martinasek \etal{}~\cite{martinasek_innovative_2013,martinasek_profiling_2016}, Gilmore \etal{}~\cite{gilmore_neural_2015}, whereas other \gls{ml} techniques have been investigated by Heuser \etal{}~\cite{heuser_intelligent_2012} and Lerman \etal~\cite{lerman_power_2014,lerman_machine_2015}.
+Hereafter, we focus on the specific use of \gls{dl} rather than on other \gls{ml} algorithms.
+The reader interested in a complete review of the use of every learning algorithm in \gls{sca} may refer to the comprehensive survey of Hettwer \etal{}~\cite{hettwer_applications_2020}.
+
+% Target Primitives
+The \gls{asym_crypto} has been by now investigated by Carbone \etal{} concerning the \gls{rsa} primitive~\cite{carbone_deep_2019}, and by Weissbart \etal{}~\cite{weissbart_one_2019} concerning elliptic curves.
+In both works, results are as promising as for the symmetric context.
+
+Auto-Encoders appeared as a valid solution to perform dimensionality reduction and pre-processing of side-channel signals~\cite{maghrebi_breaking_2016}. 
+The temporal aspect of side-channel traces leads the community to explore as well some recurrent neural network structures, in particular the \gls{lstm} one~\cite{maghrebi_deep_2019}.
+\glspl{cnn} appeared more suitable in presence of signal desynchronization, and thus in presence of counter-measures injecting desynchronization in signals~\cite{cagli_convolutional_2017,prouff_study_2018,kim_make_2019}.
+
+\subsection{Unsupervised Learning for \gls{sca}}
+Moreover one may remark that the great majority of works apply deep learning to perform profiling attacks, and logically exploits for the learning algorithm a supervised experience.
+A very few works proposed a non-profiling deep-learning-based attack.
+First, Timon proposed at \textsc{Ches}'19~\cite{timon_non-profiled_2019} an extension of the \gls{lra} attack~\cite{schindler_stochastic_2005}.
+However, this means that the learning algorithm still exploits a supervised experience, in which labels are assigned according to different key hypotheses.
+
+Second, Ramezanpour \etal{}~\cite{ramezanpour_scaul_2020} extended the works of Timon in several ways, by using \glspl{lstm} as an unsupervised feature extractor, and by using some analysis developed by Wang \etal{}~\cite{wang_ridge_2018} as a leakage modeling method.
+
+A full-non-supervised track, based for example onto deep clustering techniques recently proposed in the computer vision domain, is still unexplored in the side-channel context.
+
+\subsection{Exploring the \gls{dl} Strategies for \gls{sca}}
+This vast panorama of experimentally investigated tools have subsequently emphasized the need for a deep understanding of their architectural properties.  
+A well-established methodology -- beyond those already proposed~\cite{prouff_study_2018,zaid_methodology_2019} -- to tune the (very) high number of \glspl{hp} in these models would be very useful.
+Furthermore, since in ML the learning algorithms are driven by data, the data management is a crucial point and related issues and good practices have been investigated in this sense.
+Cagli \etal{}~\cite{cagli_convolutional_2017} and Kim \etal{}~\cite{kim_make_2019} proposed data augmentation techniques to control and decrease the estimation error~\eqref{eq:err_est}.
+But many questions about the utility and /or necessity of performing some pre-processing like dimensionality reduction~\cite{maghrebi_deep_2019}, realignment~\cite{cagli_convolutional_2017,zhou_deep_2019}, de-noising~\cite{wu_remove_2019}, under/over-sampling to deal with class imbalance~\cite{picek_curse_2019}, or the conversion of data into the frequency domain by means of Fourier or Wavelets transforms~\cite{yang_convolutional_2018,destouet_wavelet_2020} have been raised.
+
+\subsection{Support for Understanding}
+Although \glspl{dnn} show encouraging results in an evaluation context of \gls{sca}, following the recent hype of deep learning in pattern recognition, many people in the community remain skeptical and reluctant to this approach.
+This is mostly due to the \emph{black-box}%
+\footnote{
+    This terminology shall not be confound with the same term used for black-box attack scenarios discussed in \autoref{chap:sca}.
+} 
+aspect of those algorithms, \ie{} the fact that they do not provide any insight about how the informative leakage occurs in the \gls{sca} traces.
+Although not of great interest for the attackers whose ultimate goal is only to recover the secret key, this represents a huge stake for evaluators and developers.
+
+To provide understanding in \gls{dl} models behavior, a track of recent works -- including ours -- proposed the use of some visualization techniques, with the threefold intent of characterizing the sensitive leaking part of the side-channel traces, understanding the nature of the signal information that a given neural network is able or not to exploit~\cite{masure_gradient_2019,hettwer_deep_2019,timon_non-profiled_2019,vanDerValk_kilroy_2019} and validating the \glspl{hp} choices~\cite{zaid_methodology_2019}.
+Furthermore, visualization techniques aiming at focusing on \gls{dl} in order to help tuning their \glspl{hp} or understanding their prediction is a long running challenge in the visualization and machine learning community~\cite{hohman_visual_2019,garcia_task_2018}.
+This issue will be the core discussion of \autoref{chap:gradient_viz}.
+
+\subsection{\gls{dl}-based \gls{sca} and Counter-Measures}
+The community already wondered about the efficiency of existing side-channel counter-measures against \gls{dl}-based \gls{sca}. 
+Many works -- including ours -- recently investigated the robustness of classic counter-measures, in particular the high-order secret-sharing~\cite{maghrebi_breaking_2016,prouff_study_2018,kim_make_2019,timon_non-profiled_2019,maghrebi_deep_2019,masure_comprehensive_2019,zhou_deep_2019,bronchain_dissection_2020}.
+The \gls{dl}-based \gls{sca} showed very fast outperforming results with respect to the previous state-of-the-art attacks.
+The main advantage of \gls{dl}, compared to regular \gls{sca} attacks is that \gls{dl} is not technically limited by the minimal number of points which must be jointly processed, which was originally one of the strong practical arguments to use high-order secret-sharing, as we argued in \autoref{sec:masking}.
+Nevertheless, Bronchain \etal{} recently emphasized a use case where automated attacks with \gls{dl} did not succeed against a software target protected with affine secret-sharing whereas classical template attacks involving a subtle dissection of the open source code~\cite{bronchain_dissection_2020}.
+This lets one think that \gls{dl}-based \gls{sca} could not always represent a better approach than classical Gaussian templates.
+We further discuss this case in the perspectives presented in the global conclusion of this thesis.
+
+
+This also raises the challenge of knowing exactly the necessary number of traces for the training phase of a \gls{dl} model -- \ie{} the sample complexity, and how secret-sharing could have an impact on this constraint. 
+Until now, only Picek \etal{} started tackling the question~\cite{picek_profiling_2019}. 
+
+In addition, to the best of our knowledge, no sound counter-measure has been exhibited so far in the literature to specifically counteract deep learning techniques in side-channel analysis.
+Nevertheless, it seems that perturbing the inputs or adding dummy operations to fool a network could help developers in the protection of their implementation against deep learning attackers~\cite{bertrand_fool_2020}.
+
+\subsection{Multi-Task Learning}
+\label{sec:multi-task}
+Some works make the hypothesis that several sensitive variables, processed in a similar way by the device during the cryptographic algorithm execution, may be targeted while keeping unchanged the neural network architecture (\ie{} the \glspl{hp} are tuned only once)~\cite{green_not_2019}.
+A similar approach has been proposed by Wang \etal{}~\cite{wang_tandem_2020}, who combined the predictions of three different models targeting three different sensitive intermediate computations in an \gls{fpga} implementation of \gls{aes}.
+A recent work from Maghrebi~\cite{maghrebi_deep_2020} leverages this finding by proposing to solve the \gls{sca} problem with a single multi-labeling classifier.
+However, his solution, as is, is limited to learning only two labels at the same time.
+In the general conclusion of this thesis, we will further discuss this new line of work.
+
+The multiple classifier concept is analogously proposed in~\cite{destouet_wavelet_2020}, where several overlapping modelizations of a sensitive variable are independently recognized by several classifiers whose outputs are jointly exploited in the attack phase.
+In addition to these multiple outputs, it has been observed that training a deep neural network in a multi-task fashion results in having the performances of each single classifier increased.
+
+\subsection{Multi-Sources}
+The multi-source idea to enrich signal databases, meaning harvesting at the same time several side-channel signals (for example power consumption and \gls{em} irradiation captured with multiple probes placed nearby different areas of the device) and exploiting them synergistically, has been explored by Genevey-Metat \etal{} at \textsc{C\&esar} 2019~\cite{genevey_combining_2019}.
+Furthermore, learning with multiple and even heterogeneous sources remains an open topic in the machine learning community.
+
+\subsection{Portability}
+As a related topic, Carbone \etal{}~\cite{carbone_deep_2019} and Bhasin \etal{}~\cite{bhasin_mind_2019} tackled the portability issue: these works aim to understand the performance effects observed on \gls{dl} models while conducting a profiling phase on a device which may not be a perfect clone of the target, in opposition to what is assumed throughout this thesis.

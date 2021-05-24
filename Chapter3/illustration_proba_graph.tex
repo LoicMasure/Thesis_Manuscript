@@ -1,0 +1,16 @@
+\begin{figure}
+    \centering
+    \begin{tikzpicture}[rounded corners, >=stealth']
+        \node[fill=cealightgray] (Plaintext) {\(\ppp_i \gets \PPP\)}; 
+        \node[below = of Plaintext] (Ghost){};
+        \node[fill=cealightgray, below = of Ghost] (Key) {\(\kkkTest \gets \KKK\)};
+        \node[fill=cealightgray, right = of Ghost] (Sensitive) {\(\zzz_i = \miniEncrypt{\ppp_i, \kkkTest}\)};
+        \node[fill=cealightgray, right = of Sensitive] (Leakage) {\(\xxx_i \gets \XXX \given \ZZZ = \zzz_i\)};
+        % Dessin des liens
+        \draw[->] (Plaintext) -- (Sensitive);
+        \draw[->] (Key) -- (Sensitive);
+        \draw[->] (Sensitive) -- (Leakage);
+    \end{tikzpicture}
+    \caption{Probabilistic graph denoting the links between the data.}
+    \label{fig:proba_graph}
+\end{figure}

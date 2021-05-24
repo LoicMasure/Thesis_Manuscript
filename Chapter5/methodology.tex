@@ -1,0 +1,44 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%                           METHODOLOGIE CHES                                  %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\paragraph{The hypothesis class \(\hypoclass\).}
+The hypothesis class \(\hypoclass\) used for the next two experiments, namely Experiments 4 and 5, is defined as the set of \gls{mlp} with \(\numLayers=1\) hidden layer and \(\linSize = 500\) hidden neurons.
+That is,
+\begin{equation}
+    \MLmodel = s \circ \linLayer_2 \circ \BNLayer \circ
+    \dropLayer_q \circ \actLayer \circ \linLayer_1 \circ \BNLayer \enspace ,
+  \end{equation}
+where \(\dropLayer_q\) denotes a dropout layer of parameter \(q\), compared to the architecture presented in \autoref{sec:pres_architectures}.
+The dropout parameter has been set to \(q=0.1\) \ie{} each neuron of the hidden layer is randomly set to \(0\) with probability \(q\) each time an output \(\MLmodel(\xxx)\) is computed during the optimization.
+
+\paragraph{Common settings.}
+The trainings have been done with the \gls{adam} algorithm through a number of epochs denoted by \(T\), \ie{}, each trace has been processed \(T\) times by the algorithm. 
+Over the \(500,000\) profiling traces, a portion \(\alpha\) is used for the training, and the remaining is used as a hold-out set for computing an unbiased estimate of the perceived information. 
+In other words, the profiling set is made of \(\numTracesProf = \alpha \times 500, 000\) traces while the hold-out set is made of \(\numTracesVal = (1 - \alpha) \times 500,000\) traces.
+We fix the limit \(\alpha \leq 4/5\) so that the quality of the estimation over the hold-out set remains satisfying: the error margin will be at most \(10^{-2}\) with a confidence at least \(90 \%\) in the worst case, according to Chebyshev's inequality -- see \autoref{sec:probas}.
+
+
+\paragraph{Experiment 4 on Boolean secret-sharing.}
+When considering secret-sharing, the generated target values are \(\Z = \bigoplus_{j \in \llbracket 0, \order \rrbracket} \verb+plain+[j]\) for \(\order \in \{0, 1, 2\}\), where \(\oplus\) denotes the \verb+xor+ operation between two bytes. 
+This way, it can simulate leakages of order \(\order\).
+
+Provided with these target values, we selected \glspl{poi} based on the magnitude of the \gls{snr}: between 4 and 6 \glspl{poi} are selected in decreasing order of magnitude of \gls{snr} from each of the three first bytes of the plaintext array -- see \autoref{fig:snr_cw}.
+The time coordinates \(13\) to \(16\), \(25\) to \(30\) and \(37\) to \(41\) correspond respectively to the \glspl{poi} of the latter bytes manipulation. 
+This gives an input dimension of \(\traceLength = 15\).
+This way, we hoped to reduce the quantity of irrelevant components, which would have made the optimization with \gls{adam} harder, and therefore hoped to get a good estimate corresponding the most to the approximation error~\eqref{eq:err_approx_ches}.
+Details of the trained \gls{mlp} can be found hereafter.
+We set \(T = 200\) and let \(\alpha\) vary so that \(\card{\trainSet} \in \llbracket 1,000; 400,000\rrbracket\). 
+This way, we will be able to plot the so-called \emph{learning curve}, namely plotting the values of \(\PI{\Z}{\XXX}{\MLmodelSGD{\trainSet}}\) and \(\estPI{\Z}{\XXX}{\MLmodelSGD{\trainSet}}{\card{\trainSet}}\) depending on \(\card{\trainSet}\).
+This is a classical representation in machine learning.
+On a learning curve, it is expected that the empirical \gls{pi} decreases with \(\card{\trainSet}\) while the true \gls{pi} increases, and both converge towards the supremum of the \gls{pi}~\cite{vapnik_nature_1995}.
+This representation enables to discuss the estimation error~\eqref{eq:err_est_ches} according to the size of the profiling set.
+
+
+\paragraph{Experiment 5 on shuffling.}
+When considering shuffling, the generated target values are \(\Z = \verb+plain+[j]\) where \(j\) is randomly drawn from a subset of \(\llbracket 0, 15 \rrbracket\) of size \(\shufflingOrder\), \(\shufflingOrder\) denoting the number of shuffled bytes.
+
+Contrary to the experiments on secret-sharing, we did not selected \glspl{poi} but only restricted the target window to the \(\traceLength = 250\) first time samples of the traces, which was sufficient to cover the leakages of every shuffled plaintext byte (see \autoref{fig:snr_cw}).
+Afterwards, a \gls{cnn} with a \gls{vgg}-like architecture has been used for those trainings.
+
+We set \(\alpha = 4/5\), \(T = 100\), and \(\shufflingOrder \in \{1, 2, 4, 16\}\).
+The aim of this experiment is to empirically verify the trend observed on the Experiment 3 (\autoref{fig:exp_MI_3}), namely a linear decrease of \gls{pi} with the number of shuffled bytes.

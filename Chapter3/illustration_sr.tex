@@ -1,0 +1,35 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%                           ILLUSTRATION DE LA FORME D'UN SUCCESS RATE         %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\tikzset{
+    %Define standard arrow tip
+    >=stealth',
+    %Define style for different line styles
+    axis/.style={<->},
+    important line/.style={thick},
+}
+\begin{tikzpicture}[scale=1]
+    \def\Na{5.73}
+    \begin{axis}%
+    [     
+        xmin=0,
+        xmax=10,
+        width=10cm,
+        height=5cm,
+        axis x line=bottom,
+        ytick={0,.9,1},
+        yticklabels={0, \(\beta\), 1},
+        xtick={0, \Na},
+        xticklabels={0, \({\numTracesAttack(\disting{}, \succOrder, \beta)}\)}, 
+        xlabel=\(\numTracesAttack\) (log scale),
+        ylabel=\({\succRate(\numTracesAttack, \disting{}, \succOrder)}\),
+        every axis x label/.style={at={(current axis.right of origin)},anchor=north west},
+        ymax=1.1,
+        axis y line=left,
+        important line
+    ]
+        \addplot[dashed, samples=2, gray] coordinates {(0, 0.9) (10, 0.9)};
+        \addplot[dashed, samples=2, gray, ->] coordinates {(\Na, 0.9) (\Na, 0)};
+        \addplot[blue,mark=none,samples=100,domain=-6:6] (x+6,{1/(1+exp(-3*(x+1)))});
+    \end{axis}
+    \end{tikzpicture}

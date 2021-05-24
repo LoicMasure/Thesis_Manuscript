@@ -1,0 +1,77 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%                   RECALLS ON VECTORIAL CALCULUS                              %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Gradient and Jacobian Matrix}
+In the following, \(\realSet^n\) denotes the \(n\)-dimensional \gls{vecSpace}, provided with the \gls{prodScal} \(\langle\cdot,\cdot\rangle\).
+Let \(f:\realSet^n \rightarrow \realSet\) be a function of several real-valued variables.
+We denote its \gls{partDeriv} with respect to the \(i\)-th entry of the input vector \(\xxx\) by \(\partDeriv{\xxx[i]}f\).
+The vector \(\grad[]{\fonction{f}{\xxx}} \eqdef \left(\partDeriv{\xxx[1]}f(\xxx), \ldots, \partDeriv{\xxx[n]}f(\xxx)\right)^\intercal\) denotes the \gls{gradient} of the function \(f\).
+If there is an ambiguity, the gradient will be denoted by \(\grad[\xxx]{\fonction{f}{\xxx}}\) to emphasize that it is computed with respect to \(\xxx\) only.
+
+% Critical points
+We recall that \(\xxx\) is said to be a \gls{critical} point of \(f\) if \(\grad[\xxx]{\fonction{f}{\xxx}}=0\), a \emph{local} minimizer if it minimizes \(f\) over a \gls{voisinnage} of \(\xxx\), and a \emph{global} minimizer if it minimizes \(f\) over the whole domain of \(f\).
+If \(f\) is defined over an open set of \(\realSet^n\), a (local or global) minimizer is necessarily a \gls{critical} point, but the converse is not always true.
+In that case, such points are called \emph{saddle points}.
+
+% Jacobian matrix
+If \(f\) is a function from \(\mathbb{R}^n\) to \(\mathbb{R}^m\), then 
+\(\jac{f}{\xxx} \in \mathbb{R}^{m, n}\) denotes the \gls{jacob} of size \((m, n)\), whose rows are the transposed gradient of each elementary function \(\xxx \mapsto f(\xxx)[i] \in \realSet, \enspace i \in \llbracket 1, m \rrbracket\).
+
+% Chaining rule
+When computing the derivatives of composed functions, it is useful to know the \emph{chaining rule}.
+The following lemma recalls this calculus rule.
+\begin{lemma}[{Chaining Rule~\cite[p.~199]{goodfellow_deep_2017}}]
+    \label{lemma:chaining_rule}
+    Let \(f:\realSet^m \rightarrow \realSet^p\) be a real-valued function and \(g:\realSet^n \rightarrow \realSet^m\) be a vectorial-valued function.
+    Let \(\varphi: \xxx \in \realSet^n \mapsto \fonction{f \circ g}{\xxx} \in \realSet^p\).
+    The \emph{chaining rule} states that
+    \begin{equation}
+        \jac{\varphi}{\xxx} = \jac{f}{g(\xxx)} \cdot \jac{g}{\xxx} \enspace .
+        \label{eq:chain_rule}
+    \end{equation}
+    In particular, if \(p=1\), the \glspl{jacob} of \(f\) and \(\varphi\) are their transposed gradients, so:
+    \begin{equation}
+        \grad[\xxx]{\fonction{\varphi}{\xxx}}^\intercal = \grad{\fonction{f}{g(\xxx)}}^\intercal \cdot \jac{g}{\xxx}\enspace .
+    \end{equation}
+\end{lemma}
+
+As an example, if one takes \(g(\xxx) = M \cdot \xxx\) where \(M \in \realSet^{m \times n}\) and \(f(\vNNOutput) = \frac{1}{2}\langle \vNNOutput, \vNNOutput \rangle\), one gets \(\varphi(\xxx) = \frac{1}{2} \langle M\xxx, M\xxx \rangle = \frac{1}{2} \langle \xxx, M^\intercal M \xxx \rangle\) so the gradient is \(\grad[\xxx]{\varphi}(\xxx) = M^\intercal M \xxx\).
+It can then be verified that it corresponds to the product in \autoref{eq:chain_rule}, where \(\jac{g}{\xxx} = M\) and \(\grad[\vNNOutput]{f}(\vNNOutput) = \vNNOutput\).
+
+
+\subsection{The Gradient Descent Optimization Algorithms}
+\label{sec:optim_algo}
+We will see in \autoref{sec:erm_principle} that machine learning (almost) always consists in solving a functional optimization problem which can often be rephrased itself as a numerical optimization problem.
+This is why we briefly present here the optimization algorithms used in this thesis.
+Numerical and functional optimization are wide topics in machine learning, hence naturally beyond the scope of this thesis.
+The interested reader may refer to the books of Boyd \etal{}~\cite{boyd_convex_2004}, Goodfellow \etal{}~\cite[Chap.~8]{goodfellow_deep_2017} or Shalev-Shwartz and Ben-David~\cite[Chap.~14]{shalev-shwartz_understanding_2014}.
+
+\paragraph{The \gls{sgd} Algorithm.}
+Let \(f: \realSet^d \rightarrow \realSet\).
+We are given a random initial point \(\xxx_0 \in \realSet^d\), and a parameter \(\learningRate > 0\) called \emph{learning rate}.
+The \gls{sgd} step consists in updating the current point \(\xxx_t\) as follows:
+\begin{equation}
+    \xxx_{t+1} = \xxx_t - \learningRate \grad[\xxx]{\fonction{f}{\xxx_t}}.
+    \label{eq:sgd}
+\end{equation}
+It can be shown that when \(f\) is convex and \emph{smooth} (\ie{}, the norm of the gradient is bounded), \gls{sgd} converges towards the unique point \(\xxx^{\star}\) minimizing \(f\) with speed \(\mathcal{O}\left(\frac{1}{\sqrt{T}}\right)\) where \(T\) is the number of steps~\cite[Thm.~14.8]{shalev-shwartz_understanding_2014}.%
+\footnote{We recall that unicity of a minimizer of \(f\) is ensured by convexity~\cite[Sec.~4.2.2]{boyd_convex_2004}.}
+Actually, the \gls{sgd} step given in \autoref{eq:sgd} denotes the regular gradient descent on functions differentiable everywhere.
+The convergence of the \gls{sgd} can be extended without loss of generality to functions that are differentiable \gls{ae}, provided that where it is defined, the gradient has a bounded norm.
+Likewise, the exact gradient of \(f\) can be replaced by an unbiased statistical estimator of \(\grad{\fonction{f}{\xxx_t}}\), without changing the convergence properties of \gls{sgd}~\cite[Thm.~14.8]{shalev-shwartz_understanding_2014}.
+Unfortunately, \gls{sgd} is not guaranteed to converge towards the minimum of \(f\) if the latter one is not convex, which will be the case in our context as we will see in \autoref{sec:challenge_optimization}.
+More precisely, provided that the learning rate is small enough, the \gls{sgd} can still converge \emph{almost surely} towards a local minimizer~\cite{lee_gradient_2016}, which means that the convergence towards a saddle point has probability zero if the initial point \(\xxx_0\) is randomly chosen.
+Nevertheless, this minimizer is not necessarily the global minimizer.
+Even worse, the learning rate is a sensitive parameter.
+If the learning rate is too high, the \gls{sgd} can diverge~\cite[Sec.~9.3]{boyd_convex_2004}.
+On the opposite, if the learning rate is too low, the convergence may be prohibitively long.
+For this reason, the \gls{sgd} is not widely used in practice.
+
+
+% The Adam algorithm
+Instead of using the \gls{sgd} as is, we will rather use a slight variant called \gls{adam}, proposed by Kingma \etal{} at \textsc{Iclr}'15~\cite{kingma_adam_2014}.
+It is based on adaptive estimates of lower-order (\ie{}\,1 and 2) moments of the gradients computed at each iteration of the descent.
+Those moments are then used to slightly modify the descent direction -- originally set to \(- \grad[\xxx]{f(\xxx)}\).
+It is nowadays one of the most used gradient descent based optimization algorithms for machine learning.
+A complete description and study of this algorithm is beyond the scope of this thesis.
+Nevertheless, the interested reader may refer to the \emph{Deep Learning} book by Goodfellow \etal{}\,for more information~\cite[Sec.~8.5.3]{goodfellow_deep_2017}, or directly to the Kingma \etal{}'s paper.

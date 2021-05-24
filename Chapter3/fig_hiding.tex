@@ -1,0 +1,22 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%                               ILLUSTRATION HIDING                            %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\tikzset{
+    wave/.style={decorate,decoration={snake,post length=1mm}}
+}
+\begin{tikzpicture}
+    \draw (0,0)coordinate (O)--++(-30:1)coordinate (A)--++(90:3)coordinate (B)--++(210:1)coordinate (C)--cycle;
+    \draw ($(O)!0.25!(C)$)--++(180:1.5) node[left]{\(\p\)};
+    \draw ($(O)!0.75!(C)$)--++(180:1)--++(90:1.0)node[above]{\(\key\)};
+    \foreach \y/\t in {0/1,0.1/2,0.2/3} {
+        \draw ($(A)! 0.2+\y*3 !(B)$)--++(0:1) node[right, minimum size=0.75cm, rounded corners=1ex, fill=red!20, draw] (c\t){\(\miniEncrypt{}_\t\)} ;
+        \draw[draw=none] (c\t) --++(0:1) node[right, draw=none]{\phantom{\(\z\)}};
+    }
+    \draw ($(O)!0.5!(A)$)--++(-90:1) node[minimum size=1.1cm, rounded corners=1ex, fill=red!20, draw]{\(\$\rightarrow 3\)};
+    \draw (c3) --++(0:1) node[right]{\(\ctx\)};
+    \draw[ceagray] (c1) --++(0:1) node[right]{\(\ctx\)};
+    \draw[ceagray] (c2) --++(0:1) node[right]{\(\ctx\)};
+    \draw[->,wave] (c3) --++(30:1.5) node[right]{\(\xxx_3\)};
+    \draw[->,wave, dashed, ceagray] (c2) --++(-30:1.5) node[right]{\(\xxx_2\)};
+    \draw[->,wave, dashed, ceagray] (c1) --++(-30:1.5) node[right]{\(\xxx_1\)};
+\end{tikzpicture}

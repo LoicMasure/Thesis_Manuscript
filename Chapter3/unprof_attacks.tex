@@ -1,0 +1,112 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%                       NON-PROFILED ATTACKS                                   %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+When profiled attacks are impossible -- \eg{} when one lacks a clone device behaving as an open sample -- the attacker is reduced to make (strong) hypotheses on the leakage model, instead of accurately estimating it.
+The error induced on the guessing of the secret key may then be more or less sensitive to those hypotheses.
+That is why such a weaker attacker should also adapt its strategy in the key recovery.
+
+Two main strategies can be used when facing a non-profiled attack context.
+The first one consists in using leakage models commonly adopted in the \gls{sca} literature.
+The latter one typically proposes some simple generative models although often relevant.
+Combined with those simple models, another distinguisher, namely the \emph{correlation} distinguisher, is widely used.
+This gives an approach known under the name of \gls{cpa}, which will be addressed in \autoref{sec:cpa}.
+
+The second one aims at addressing the case where no sound leakage model can be assumed concerning the acquired traces.
+In that case, the \gls{mi} can be somehow used as a distinguisher, leading to the so-called \gls{mia}.
+This approach being beyond the scope of this thesis, the interested reader may refer to the study conducted by Batina \etal{}~\cite{batina_mutual_2011}.
+
+\subsection{Correlation Power Analysis}
+\label{sec:cpa}
+The aim of \gls{cpa} is as follows.
+The attacker is given a uni-variate \emph{additive noise} leakage model, typically under the form
+\begin{equation}
+    \left( \XXX[t] \given \Z = \sensValue \right) \propto \varphi(\sensValue) + \randVar{B} \enspace ,
+    \label{eq:cpa_leakage_model}
+\end{equation}
+where \(\varphi: \sensVarSet \rightarrow \realSet\) is a deterministic function of the observation \(\sensValue\) of the sensitive target variable \(\Z\) leaking at a time coordinate \(t\), and \(\randVar{B}\) is a Gaussian zero-mean random variable independent from \(\Z\) denoting the ambient noise.
+The attacker wants to test for which hypothetical value of the secret key the acquired traces from the attack set \(\attackSet\) fit \emph{the most} the assumed leakage model.
+Since \autoref{eq:cpa_leakage_model} assumes a linear relation between the random variables \(\left( \XXX[t] \given \Z \right)\) and \(\varphi(\Z)\), one materializes this test by computing the correlation coefficient between \(\XXX[t]\) and \(\fonction{\varphi}{\miniEncrypt{\Pt, \key}}\), for each time sample \(t\) and for each hypothetical value \(\key\), as stated by the following definition.
+\begin{definition}[Correlation Distinguisher]
+    Given an attack set \(\attackSet\) and a leakage model \(\varphi\), the \emph{Correlation Distinguisher} is defined as:
+    \begin{equation}
+        \cpa{\attackSet}[\key] \eqdef \max_{t \in \llbracket 1, \traceLength \rrbracket}\lvert \fonction{\rho}{\XXX[t], \fonction{\varphi}{\miniEncrypt{\Pt, \key}}} \rvert \enspace ,
+        \label{eq:dist_cpa}
+    \end{equation}
+    where
+    \begin{equation}
+        \fonction{\rho}{\X, \randVar{Y}} \eqdef \frac{S_{\X, \randVar{Y}}}{\sqrt{S_\X^2 \cdot S_{\randVar{Y}}^2}}
+    \end{equation}
+    denotes the empirical -- \aka{} \emph{Pearson} -- correlation coefficient between \(\X\) and \(\randVar{Y}\).
+\end{definition}
+Indeed, given a key hypothesis \(\key\), the computation of the correlation coefficient for each time coordinate of the traces give a vector \(\rho\) of size \(\traceLength\).%
+\footnote{
+    \(\traceLength\) is recall to be the dimensionality of the traces, \ie{}, the number of time samples in them.
+}
+% Good key hypothesis
+Provided that the leakage model is sound, when the right key \(\keyTest\) is tested, the computed correlation coefficient is expected to reach a significantly higher value where the leakage happens, \ie{}, at \glspl{poi}, than elsewhere in the resulting vector.
+% Wrong key hypothesis
+Instead, when another wrong key candidate \(\tilde{\key}\) is tested, it is equivalent to test the fitness of another leakage model, namely \(\fonction{\varphi}{\miniEncrypt{\Pt, \tilde{\key}}}\).
+If this leakage model is highly non-linear with respect to the true leakage model \(\fonction{\varphi}{\miniEncrypt{\Pt, \keyTest}}\), then the resulting correlation coefficient computed at the same \gls{poi} is not expected to be distinguishable from the non-informative time coordinates.
+
+% The more traces, the better
+Since the computed correlation coefficients are empirical estimations, the more traces in the attack set, the more likely an attacker is able to make a discrepancy between the score of the right key hypothesis and the wrong ones.
+Hence the interest of the correlation distinguisher to mount a \gls{sca}.
+
+% Biblio
+\gls{cpa} has been first introduced, as is, by Brier \etal{} at \textsc{Ches} 2004~\cite{brier_correlation_2004}.%
+\footnote{
+    The term \gls{cema} may also be found when the traces denote acquisitions from an \gls{em} probe.
+    Yet, we will not make any discrepancy between both terms.
+}
+But Le \etal{}~\cite{le_proposition_2006} and Doget \etal{}~\cite{doget_univariate_2011} have shown that several attacks proposed in the early years of \gls{sca} since the seminal work of Kocher \etal{}~\cite{kocher_dpa_1999}, may be retrospectively reformulated as a \gls{cpa}.
+The only difference with the Brier \etal{}'s work relies on the underlying leakage model, which will be discussed hereafter.
+
+
+% Heuser
+Heuser \etal{} have shown that if the true leakage model is uni-variate and is perfectly known by the attacker, then the linear correlation distinguisher is equivalent to the maximum likelihood distinguisher regarding \autoref{final_task}~\cite{heuser_good_2014}.
+However, in a non-profiled context, one cannot guarantee that the assumed leakage model \(\varphi\) perfectly fits the true one, and here is where the correlation distinguisher takes advantage on the maximum likelihood: it is often less sensitive to approximation errors in the leakage model.
+Hence its wide use in non-profiled attacks.
+
+% Discussion on the leakage models
+\paragraph{Models to Approximate the Leakage.}
+We review hereafter the different leakage models which can be proposed to approximate the true one.
+The choice depends on the knowledge of the attacker on the software and/or hardware architecture of the target device \(\target\).
+
+Classical leakage models come from the fact that, in \gls{cmos} technology -- which is used to realize the majority of existing integrated circuits, peaks of power consumption are observable when the output of the gates transition from either a `0' to `1' or a `1' to `0' logic state.
+At the scope of an 8, 16 or 32-bit register storing a targeted intermediate computation \(\Z\), the leakage model can then be described by the values of its bits and those of the previous intermediate computation \(\Z'\) stored in the same register, that is:
+\begin{equation}
+    \XXX[t] \given \Z \propto \fonction{\varphi}{\Z, \Z'} + \randVar{B} \enspace ,
+\end{equation}
+where \(\varphi\) is a deterministic function of two elements from \(\sensVarSet\), and \(\randVar{B}\) is a random variable denoting the noise coming from the environment, \ie{}, the neighbor registers and the measurement noise.
+The knowledge of \(\Z\) and \(\Z'\) may be guessed from the source code or the hardware architecture depending on the context.
+In that case, \(\varphi\) can even be simplified to only depend on the target variable \(\Z\): the dependency on the previous state is implicitly included in \(\varphi\) and in the noise term.
+
+Since \(\varphi\) is a deterministic function of a discrete random variable taking finite values, it may be reformulated as a polynomial of the bits of \(\Z\), denoted hereafter as \(\Z[0],\ldots,\Z[n-1]\), where \(n\) is the number of bits:
+\begin{equation}
+    \fonction{\varphi}{\Z} = \sum_{\mset{J} \subset \llbracket 0, n-1 \rrbracket} \alpha_{\mset{J}} \prod_{j \in \mset{J}} \Z[j] \enspace ,
+\end{equation}
+where \(\alpha_{\mset{J}} \in \realSet\).
+Doget \etal{}\ argue that for most targets \(\target\), the attacker \(\attacker\) may assume that the degree of \(\varphi\), seen as a polynomial, is lower or equal to one~\cite{doget_univariate_2011}.
+In other words, the bits contribute to the power consumption -- or the \gls{em} emanation  -- independently from each other, therefore ignoring the possible coupling effects between the logic gates storing those bits.
+Thus, the leakage model may be simplified to:
+\begin{equation}
+    \fonction{\varphi}{\Z} = \sum_{i=0}^{n-1} \alpha_i \Z[i] \enspace ,
+\end{equation}
+where \(\alpha_i \in \realSet\), which has the advantage to be linear with respect to the bits of \(\Z\).
+At this stage, the attacker must only guess the coefficients \(\alpha_i\).
+Depending on its knowledge and on the approximation error margin he may accept on its leakage modelization, the attacker may choose between several assumptions suggested hereafter, although not exhaustive.
+\begin{itemize}
+    \item The coefficients may be assumed to be equal to each other.
+    This corresponds to the so-called \emph{Hamming weights} leakage model, denoted as \(\hWeight(\Z)\).
+    This model is the one proposed by Brier \etal{} for their \gls{cpa}~\cite{brier_correlation_2004}, and is, so far, the most widely used leakage model.
+    \item The coefficients may otherwise be ignored -- \ie{} they are set to 0 -- except one of them.
+    Such a leakage corresponds to a \emph{monobit} leakage model.
+    In particular, when the non-null coefficient is \(\alpha_0\) (resp.~\(\alpha_{n-1}\)), the model is also known as a \gls{lsb} (resp.~\gls{msb}) model.
+    Although not realistic, this model has the advantage to be very robust against approximation errors, since it involves few approximation assumptions on the leakage, thereby making the bridge with legacy \gls{dpa}~\cite{kocher_dpa_1999}.
+    \item Eventually, the coefficients may be adjusted thanks to a linear regression with the traces from the attack set, for each key hypothesis.
+    This approach is known as a \emph{stochastic} attack or \gls{lra}~\cite{schindler_stochastic_2005}.
+\end{itemize}
+
+It is also noticeable that Brier \etal{} suggest to choose the target sensitive variable \(\Z\) as the output of the \(\sub\) instead of the output of the \(\ark\).
+By including the \(\Sbox\) inside \(\varphi\), one ensures that the leakage induced by z wrong key hypothesis will be highly non-linear with respect to the one induced by the right key hypothesis. 
+Therefore, this decreases the required number \(\numTracesAttack\) of queries to distinguish the right key \(\keyTest\) with the correlation distinguisher -- see \cite[Sec.~6.3.1]{mangard_power_2007} for an explanation.

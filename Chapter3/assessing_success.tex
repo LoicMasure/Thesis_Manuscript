@@ -1,0 +1,126 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%                           PERFORMANCE METRICS IN SCA  		               %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Whereas an attacker is ultimately interested in the value of the secret key embedded in the target device, a developer or an evaluator is much more interested in the effort required by the attacker to succeed, from which ultimately depends the security level of the target implementation.
+This different perspective leads the \gls{sca} community to design and adopt conventions on the performance metrics used for the quotation of the vulnerabilities of the target implementation.
+We present in this section the different aspects to take into account in the efficiency evaluation of an attack, before introducing the related performance metrics.
+
+\subsection{The Different Factors of Attack Complexity}
+\label{sec:factors_attack_complex}
+
+% Limited Capacities for Attacking
+Depending on who actually instantiates the attack \(\attacker\), \ie{}, whether this is an actual adversary or a developer/evaluator, one will differently define the notion of complexity.
+We particularly distinguish the \emph{effectiveness} of an attack -- \ie{} can \(\attacker\) succeed -- from its \emph{efficiency} -- \ie{} to what extent can \(\attacker\) succeed.
+This distinction is necessary because nowadays crypto-systems are designed to be \emph{resilient} from a potential informative leakage about some secret data, \eg{}, the key.
+This concretely means that those crypto-systems often refresh the secret keys used in their communication protocols by the cryptographic primitives, after a given number of uses for encryption and/or decryption.
+On the one hand, if an attack requires a number of queries \(\numTracesAttack\) beyond the refreshing period of a key, then it will be harmless for the crypto-system.
+On the other hand, refreshing the secret key in a communication protocol might limit the runtime performance of the upper communication layers of the target device, and thereby its global performance desired by the developer.
+Thanks to this mechanism, the developer can control the trade-off between performance and security, depending on the efficiency of potential attacks.
+In this context, an attacker is interested in the effectiveness of its particular attack, whereas a developer is more interested in the best efficiency of a wider class of attacks against which he wants to protect its device.
+
+Therefore, the notion of efficiency can be more precisely translated into the required number \(\numTracesAttack\) of queries to succeed the attack \(\attacker\) whereas the effectiveness can be defined by the existence of such an \(\numTracesAttack\) ensuring the success of the attack.
+
+\subsection{The Performance Metrics}
+\label{sec:performance_metrics}
+To assess the effectiveness and the efficiency of an attack, it has initially been suggested to measure or estimate the minimum number of traces required to get a successful key recovery~\cite{mangard_power_2007}.
+This can be done by computing the \emph{guessing vector} \(\guessVec{\disting{\attackSet}}\) of a score vector \(\disting{\attackSet}\).
+The coordinates of the guessing vector are defined as follows:
+\begin{equation}
+	\guessVec{\disting{\attackSet}}[\key] \eqdef \sum_{\key' \in \keySet}
+	1_{\disting{\attackSet}[\key'] \geq \disting{\attackSet}[\key]} \enspace ,
+	\label{eq:guess_vec}
+\end{equation}
+where \(1\) is the characteristic function defined in \autoref{sec:notations}.
+In particular, \(\guessVec{\disting{\attackSet}}[\keyTest]\) denotes the \emph{rank} of the right key, which determines the success of an attack depending on the form of the exploitation of the scores by the attacker, as discussed in \autoref{sec:problem_position}.
+Although unknown by a pure attacker, this quantity is known by a developer/evaluator in an evaluation context.
+
+Yet, many random factors may be involved during the attack: we have seen that the traces and the plaintexts may be seen as the realizations of \(\numTracesAttack\) couples of \gls{iid} random variables \((\XXX, \PPP)\), so the attack set \(\attackSet\) may be seen itself as the realization of a random vector.
+In other words, one cannot consistently compare two attackers \(\attacker_1\) and \(\attacker_2\) from one attack set, since the comparison could lead to different conclusions on another attack set \(\attackSet'\) acquired on the same target \(\target\).
+So any measure of success must be refined to remove any dependency on random factors.
+
+To circumvent this issue, the \gls{sca} community has agreed on a metric called the \gls{sr} \emph{at order \(\succOrder\)}:%
+\footnote{
+    The notion of order of the success rate shall not be confused with the notion of order of secret-sharing defined in \autoref{sec:masking}.
+}
+\begin{equation}
+    \succRate(\numTracesAttack, \disting{}, \succOrder) \eqdef 
+    \prob{\guessVec{\disting{\attackSet}}[\keyTest] \leq \succOrder \given \card{\attackSet} = \numTracesAttack} \enspace ,
+    \label{eq:SR}
+\end{equation}
+where \(\succOrder\) is set according to the desired definitions of ``success'' among those proposed in \autoref{sec:problem_position}.
+The \gls{sr} quantifies the probability that the attacker \(\attacker\) succeeds in finding the secret key stored in the target \(\target\) within a given number \(\numTracesAttack\) of queries done during the attack phase.
+If the attack is effective, the \gls{sr} is expected to increase with \(\numTracesAttack\) and to converge towards 1.
+Following the discussion in \autoref{sec:factors_attack_complex}, the efficiency of the attack \(\attacker\), \emph{at probability \(\beta\)}, is likewise materialized by:
+\begin{equation}
+	\numTracesAttack(\disting{}, \succOrder, \beta) \eqdef \min \left\{\numTracesAttack \in \natSet \given \succRate(\numTracesAttack, \disting{}, \succOrder) \geq \beta \right\} \enspace ,
+    \label{eq:eff_sr}
+\end{equation}
+where \(\beta \in [0,1]\) is a threshold set by the evaluator, typically \(\beta=90\%\).
+\autoref{fig:illustration_sr} illustrates the relationship between the different quantities introduced so far in this section.
+\begin{figure}
+    \centering
+    \input{illustration_sr}
+    \caption{Typical shape of a \glsfirst{sr} plot, illustrating how \(\numTracesAttack(\disting{}, \succOrder, \beta)\) is defined.}
+    \label{fig:illustration_sr}
+\end{figure}
+
+One can accordingly compare two attackers \(\attacker_1\) and \(\attacker_2\) by comparing the efficiency of their respective distinguishers at a given threshold and a given success order.
+In the remaining of this thesis we will lighten the notations, by removing the reference to the success order \(\succOrder\) when the latter one is implicitly fixed to one, and by removing the reference to \(\beta\) when the latter one is implicitly fixed to \(90 \%\).
+Likewise, since so far an attacker is fully defined by its distinguisher, we may equivalently substitute \(\disting{}\) with \(\attacker\) in the notations.
+
+% Introducing Na* as reference metric
+Within this framework, it is then common to formulate the evaluator's task as assessing the worst-case scenario from the developer's point-of-view.
+The pursuit of such scenario is the cornerstone of the evaluation, as stated by the following problem.
+\begin{problem}[SCA Optimization]
+    \label{final_task}
+	Given a target \(\target\), a threshold \(\beta \in [0,1]\) and a success order \(\succOrder\), find the most efficient attacker \(\attacker\), \ie{}, the one instantiating the distinguisher \(\disting{}\) minimizing \(\numTracesAttack(\disting{}, \succOrder, \beta)\).
+    We denote by
+    \begin{equation}
+        \numTracesAttackOpt(\succOrder, \beta) \eqdef \min_{\disting{}} \left\{\numTracesAttack(\disting{}, \succOrder, \beta)\right\}
+    \end{equation}
+    the efficiency of the optimal attack.
+\end{problem}
+
+\begin{remark}
+    Rather than the success rate, one can equivalently consider the average ranking of the correct guess, \aka{} the \glsfirst{ge}~\cite{standaert_unified_2009}, defined as:
+    \begin{equation}
+        \GE(\numTracesAttack, \disting{}) \eqdef 
+        \esper[\attackSet]{\guessVec{\disting{\attackSet}}[\keyTest] \given \card{\attackSet} = \numTracesAttack}.
+        \label{eq:GE}
+    \end{equation}
+    In that case, the efficiency is defined by :
+    \begin{equation}
+        \numTracesAttack(\disting{}, \geThresh) \eqdef \min \left\{\numTracesAttack \given \GE(\numTracesAttack, \disting{}) \leq \geThresh \right\} \enspace ,
+        \label{eq:eff_ge}
+    \end{equation}
+    where \(\geThresh \geq 1\) is a threshold set by the evaluator.
+    An illustration of the metrics related to the \gls{ge} is proposed in \autoref{fig:illustration_ge}.
+    The \gls{ge} quantifies the average amount of enumeration which is yet to be done after the key recovery phase if the right key is not ranked in the first place in the guessing vector.
+    
+    Since an acceptable amount of enumeration for the whole key -- \ie{} made of the 16 bytes for \gls{aes} -- is generally set to \(2^{32}\), it is usual to set the threshold to recover only one byte to \(\geThresh = 2\).
+    This way, it ensures the average amount of enumeration for the whole key to lie below \(\geThresh^{16} \leq 2^{32}\).
+    In the remaining of this thesis, we will let the parameter \(\geThresh\) implicitly set to \(2\), in order to lighten the notations.
+    
+    The \gls{ge} is of great interest for attack scenarios in which the attacker \(\attacker\) is allowed to proceed a key enumeration after the attack phase, and we will provide later in this thesis an illustration of a \gls{ge} plot in \autoref{fig:ta_pois}.
+    Moreover, one can draw a parallel with the eponymous notion of \gls{ge} defined by the \gls{nist}~\cite{nist_auth_guidelines_2006}, which
+    ``measures [\ldots] the difficulty that an attacker has to guess the average password used in a system''.
+    Nevertheless, we will favor the \gls{sr} in this thesis.
+    \begin{figure}
+        \centering
+        \input{illustration_ge}
+        \caption{Typical shape of a \glsfirst{ge} plot, illustrating how \(\numTracesAttack(\disting{}, \geThresh)\) is defined.}
+        \label{fig:illustration_ge}
+    \end{figure}
+\end{remark}
+
+\subsection{Estimating the Metrics in Practice}
+\label{sec:estimate_practice}
+In practice, to estimate \(\succRate(\numTracesAttack, \disting{}, \succOrder)\), sampling many attack sets may be very prohibitive in an evaluation context, especially if we need to reproduce the estimations for many values of \(\numTracesAttack\) until we find \(\numTracesAttack(\disting{}, \succOrder, \beta)\).
+One solution to circumvent this problem is, given a validation set of \(\numTracesVal\) traces, to sample some attack sets by permuting the order of the traces into the validation set (\eg{} \(50\) times).
+\(\disting{\attackSet}\) can then be computed with a cumulative sum to get a score for each \(\numTracesAttack \in \llbracket 1, \numTracesVal \rrbracket\).
+For each value of \(\numTracesAttack\), the success rate is estimated by the occurrence frequency of the event ``\(\argmax_{\key \in \keySet} \disting{\attackSet}[\key] = \keyTest\)''.%
+\footnote{
+    The \gls{ge} is likewise estimated by computing the average value of \(\guessVec{\disting{\attackSet}}[\keyTest]\).
+}
+While this trick gives good estimations for \(\numTracesAttack \ll \numTracesVal\), one has to keep in mind that the estimates become biased when \(\numTracesAttack \to \numTracesVal\).
+Retrospectively, we must verify in each experiment that the result  \(\numTracesAttack(\disting{}, \succOrder, \beta)\) is indeed much lower than \(\numTracesVal\).

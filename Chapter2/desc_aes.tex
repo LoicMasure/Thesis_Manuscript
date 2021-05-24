@@ -1,0 +1,35 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%							DESCRIPTION OF AES								   %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\label{sec:desc_aes}
+As recalled in the introduction, the \gls{aes} is a round-based block-cipher encrypting blocks of 128-bit plaintexts chunks.
+Such a chunk is called a \emph{state}.
+Concretely, it is represented by a \(4 \times 4\) array of bytes, denoted by \(a\).
+The byte lying at the \(i\)-th row, \(j\)-th column of \(a\) will be denoted by \(a[i,j]\) for \(i,j \in \{0,1,2,3\}\).
+The 16 bytes of the state are indexed column-wise.
+Each element \(a[i,j]\) of the state is mathematically seen as an element of the Rijndael field \(\gf{2}{8}\) defined in \autoref{sec:disc_math}.
+The \gls{aes}-128 on which we focus through this thesis loops over 10 similar rounds -- see \autoref{fig:aes_rounds} -- during which it will progressively transform the state from the plaintext to the ciphertext through the rounds, with the help of one subkey for each round.
+The subkeys are derived from a master key according to a routine called \(\ks\), and are also represented by a \(4 \times 4\) array of bytes, like the current state.
+In the \gls{aes}-128 bit version on which this thesis focuses, the \(\ks\) operation is invertible.
+In other words, perfectly knowing one complete subkey is equivalent to knowing the whole master key, and in particular, the subkey derived at the first round equals the master key.
+In this thesis, we will particularly focus on the first steps of the cryptographic primitive, as it is the most prone to \gls{sca}.
+That is why it is not necessary to describe the \(\ks\) operation here.%
+\footnote{A complete description may be found in the \gls{fips}-197~\cite{nist_2001}.}
+
+The very first step consists in the application of the \(\ark\) operation.
+Each byte \(a[i,j]\) of the state is xor-ed with the corresponding byte of the round key \(\key[i,j]\).
+
+The next operation is the byte-wise application of a non-linear invertible mapping  called \(\sub\) devoted to introduce \gls{confusion} in the state.
+It is composed of the following two functions:
+\begin{enumerate}
+	\item The inversion in \(\gf{2}{8}\), where the null element \(0\) of the field is mapped to itself.
+	An interesting property of the fact that the group \((\gf{2}{8}\backslash\{0\}, \multgf)\) is \gls{cyclic} is that computing \(\sensValue^{-1}\) for \(\sensValue \neq 0\) is equivalent to computing \(\sensValue^{2^8-2}\)~\cite[Lem.5.3.4]{terras_2018}.
+	That is why this step is also known under the name of the \emph{power} function.
+	\item An affine transformation.
+\end{enumerate}
+Concretely, the \(\sub\) operation may be implemented thanks to a \gls{lut} called \(\Sbox\), given in the \gls{fips}-197~\cite{nist_2001}.
+
+Then, the \(\sr\) operation is applied during which the bytes in the second, third and fourth rows of the state are cyclically shifted of 1, 2, and 3 byte(s) respectively.
+
+Finally, the last operation of the round is called \(\mc\) and is devoted to introduce \gls{diffusion} in the encryption algorithm by mixing the bytes between them.
+In this thesis, we will only consider the different intermediate computations of the cryptographic primitive occurring at the output of the \(\ark\), the \(\sub\), and the \(\sr\).

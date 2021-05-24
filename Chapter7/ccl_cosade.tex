@@ -1,0 +1,22 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%                       CONCLUSION CHAPTER 7                                   %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+In this chapter, we have theoretically shown that a method called \glsfirst{gv} can be used to localize \glsfirstplural{poi}.
+This result relies on two assumptions considered as realistic in an \gls{sca} context. 
+
+
+Generally, the efficiency of the proposed method only depends on the ability of the profiling model to succeed in the attack.
+In the case where counter-measures like secret-sharing or misalignment are considered, \glspl{cnn} are shown to still build good \gls{pmf} estimations, and thereby the \gls{gv} provides a good characterization tool.
+In addition, such a visualization can be made for each trace individually, and the method does not require more work than needed to perform a profiling with \glspl{cnn} leading to a successful attack.
+Therefore, characterization can be done after the profiling phase whereas profiling attacks with \glsfirstplural{gta} often require to proceed a preliminary characterization phase.
+
+We verified the efficiency of our proposed method on simulated data.
+It has been shown that as long as a \gls{dnn} is able to have slightly better performance than randomness, it can localize points containing the informative leakage. 
+
+On experimental traces, we have empirically shown that \gls{gv} is at least as good as the state-of-the-art characterization methods, in different cases corresponding to the presence or not of different counter-measures.
+Not only it can still localize \glspl{poi} in presence of de-synchronization or secret-sharing but it has also been shown that different \glspl{poi} can be emphasized compared to the first ones highlighted by \gls{snr}.
+These new \glspl{poi} have been shown to be at least as relevant as the ones proposed by \gls{snr}.
+
+Altogether, the gradient visualization method we proposed here provides tools to the evaluator in order to get a clear understanding of the leakage detected by the \glspl{dnn} during the profiling phase.
+We have shown how this characterization could be combined with information on the source code on order to better identify the vulnerability in the code.
+Therefore, those insights can not only help the evaluator to build its diagnosis, but also help the developer to fix the vulnerability of implementations, no matter they are originally protected or not.

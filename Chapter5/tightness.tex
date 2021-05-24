@@ -1,0 +1,63 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%                           TIGHTNESS OF THE BOUND                             %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+So far we have argued that minimizing the \gls{nll} loss is a sound approach to tackle \autoref{leak_assess}: it is indeed equivalent to minimizing the cross entropy -- \cf{} \autoref{eq:general_loss}, thereby equivalent to maximizing the \gls{pi} -- \cf{} \autoref{eq:PI}. 
+In the particular case where the hypothesis class \(\hypoclass\) is a set of neural networks, it becomes now of natural interest to study the gap between the \gls{mi} and the \gls{nll} loss we are minimizing (or equivalently the empirical \gls{pi} we are maximizing) to assess the quality of the built solution: the tighter the gap, the more accurate our estimation \(\numTracesAttackEst{\MLmodel}\) of the efficiency of the optimal attack \(\numTracesAttackOpt\) in view of assessing the worst-case scenario from an evaluator's point of view.
+
+To this end, we may start from the discussion proposed in \autoref{sec:erm_principle} about the decomposition of the error terms, by updating them after instantiating the loss function with the \gls{nll}:
+\begin{eqnarray}
+  \estPI{\Z}{\XXX}{\MLmodelSGD{\trainSet}}{\numTracesProf} 
+  = & 
+  \left( \estPI{\Z}{\XXX}{\MLmodelSGD{\trainSet}}{\numTracesProf}
+	- \estPI{\Z}{\XXX}{\MLmodelMLE{\trainSet}}{\numTracesProf} \right) & \textcolor{ceagray}{\leq 0}
+	\label{eq:err_opt_ches}\\
+	+ &
+  \left( \estPI{\Z}{\XXX}{\MLmodelMLE{\trainSet}}{\numTracesProf}
+	- \sup_{\MLmodel \in \hypoclass} \PI{\Z}{\XXX}{\MLmodel}\right) & \textcolor{ceagray}{\geq 0}
+	\label{eq:err_est_ches}\\
+	+ &  
+  \left(\sup_{\MLmodel \in \hypoclass} \PI{\Z}{\XXX}{\MLmodel}
+	- \MI{\Z}{\XXX}\right) & \textcolor{ceagray}{\leq 0}
+	\label{eq:err_approx_ches} \\
+	+ &
+  \MI{\Z}{\XXX} \enspace , & \textcolor{ceagray}{\geq 0}
+	\label{eq:bayes_error_ches}
+\end{eqnarray}
+where \(\MLmodelSGD{\trainSet}\) denotes the model returned by the heuristic optimization algorithm -- \eg{}, \gls{sgd} or its variants such as \gls{adam}, see \autoref{sec:optim_algo} -- rather than the true maximum likelihood estimator \(\MLmodelMLE{\trainSet}\).
+
+The Bayes' error term \eqref{eq:bayes_error} becomes here the informational security bound on the leakage \eqref{eq:bayes_error_ches}.
+The approximation error term \eqref{eq:err_approx} quantifies now the gap \eqref{eq:err_approx_ches} to the \emph{computational} bound, namely the best profiled attacker based on the given hypothesis class \(\hypoclass\).
+The estimation error \eqref{eq:err_est} is updated as \eqref{eq:err_est_ches}, and the optimization error \eqref{eq:err_opt} is now quantified by the term \eqref{eq:err_opt_ches}.
+It is worth mentioning we argued that both terms \eqref{eq:err_opt_ches} and \eqref{eq:err_approx_ches} are negative, as they respectively result from the opposite of the error terms \eqref{eq:err_opt} and \eqref{eq:err_approx} discussed in \autoref{sec:erm_principle}.
+
+Therefore, this instantiation of the error terms enables to draw an insightful parallel between the \gls{ml} metrics and the \gls{sca} ones.
+Eventually, the whole discussion conducted in this section can be synthesized in \autoref{tab:recap_metrics}.
+\begin{table}[H]
+  \centering
+  \caption{Machine learning metrics and their meaning in Side-Channel Analysis}
+  \small
+  \begin{tabular}{c r c l c}
+    \toprule
+    \gls{ml} meaning & \gls{ml} metric &  & \gls{sca} metric & \gls{sca} meaning \\
+    \midrule
+    Perfect model
+    & \(\entrop{\Z \given \XXX}\)
+    & = & \(\log_2{\card{\sensVarSet}} - \MI{\Z}{\XXX}\)
+    & Informational security \\
+    & & & &  bound on \(\Z \given \XXX\) \\
+    + Approximation error
+    & \(\inf\limits_{\MLmodel \in \hypoclass}\LossFunc[\XXX, \Z]{\MLmodel}\)
+    & \(\iff\) & \(\sup\limits_{\MLmodel \in \hypoclass} \mathsf{PI}(\XXX;\Z;\MLmodel)\)
+    & Computational bound \\
+    Cross Entropy
+    & \(\LossFunc[\XXX, \Z]{\MLmodel}\)
+    & = & \(\log_2{\card{\sensVarSet}} - \PI{\Z}{\XXX}{\MLmodel}\)
+    & Perceived Information \\
+    \gls{nll} loss
+    & \(\LossFunc[\trainSet]{\MLmodel}\)
+    & = & \(\log_2{\card{\sensVarSet}}  - \estPI{\Z}{\XXX}{\MLmodel}{\numTracesProf}\)
+    & Estimated \gls{pi}\\
+    \bottomrule
+  \end{tabular}
+  \label{tab:recap_metrics}
+\end{table} 

@@ -1,0 +1,80 @@
+\tikzset{
+     %Define standard arrow tip
+     >=stealth',
+     %Define style for different line styles
+     axis/.style={<->},
+     important line/.style={thick},
+   }
+\begin{tikzpicture}[scale=3]
+         \coordinate (O) at (0,0);
+         \coordinate (endY) at (0,2.2);
+         \coordinate (endX) at (3, 0);
+         \draw[important line,->] (O) -- (endY) node[above]{};
+
+         % Ces coordonnées décident les limites de dessin au sein du graphe
+         \coordinate (HZ) at (0,2);
+         \coordinate (HZX) at (0,0.4);
+
+         \coordinate (rightHZ) at (0.5, 2);
+         \coordinate (rightHZX) at (0.5, 0.4);
+         \coordinate (MI) at ($0.5*(rightHZ)+0.5*(rightHZX)$);
+         \coordinate (PI) at (2.5,2);
+         \coordinate (PIlow) at (2.5,0.8);
+         \coordinate (PImiddle) at ($0.5*(PI)+0.5*(PIlow)$);
+         \coordinate (Xent) at (0,0.8);
+
+         % Bornes sup et inf
+         \draw[important line, dashed, ceablue] (PI) -- (HZ) node[left] {\(\entrop{\Z}\)};
+         \draw[important line, dashed, ceared] (rightHZX) -- (HZX) node[left] {\(\entrop{\Z|\XXX}\)};
+
+         % MI
+         \draw[important line, <->, ceared](rightHZ) -- (rightHZX);
+        %  \draw (MI) node[right] {\(\textcolor{ceared}{\MI{\Z}{\XXX}}\)};
+         \draw (MI) node[right, text width = 5 cm] {\(\textcolor{ceared}{\MI{\Z}{\XXX}}\geq \frac{f(\beta)}{\textcolor{ceaorange}{\numTracesAttackOpt}}\) \\ Chésirey \etal{}~\cite{chesirey_best_2019}};
+
+
+         % PI
+         \draw[important line, <->, ceadarkgreen] (PI) -- (PIlow);
+        %  \draw (PImiddle) node[right, text width = 4cm] {\(\textcolor{ceadarkgreen}{\PI{\Z}{\XXX}{\MLmodel}}\)};
+         \draw[important line, dashed, ceadarkgreen] (PIlow) -- (Xent);
+         \draw (PImiddle) node[right, text width = 4.75 cm] {\(\textcolor{ceadarkgreen}{\PI{\Z}{\XXX}{\MLmodel}} \leq \textcolor{ceared}{\MI{\Z}{\XXX}}\) \\ Bronchain \etal{}~\cite{bronchain_leakage_2019}};
+         \draw[important line, dashed, ceadarkgreen] (PIlow) -- (Xent);
+         \draw[important line, dashed, ceadarkgreen] (PIlow) -- (Xent) node[left] {\(\LossFunc[\XXX, \Z]{\MLmodel}\)};
+         \node[left = of Xent] {};
+\end{tikzpicture}
+
+
+% \begin{tikzpicture}[scale=1.8]
+%     \coordinate (O) at (0,0);
+%     \coordinate (endY) at (0,2.2);
+%     \coordinate (endX) at (3.3, 0);
+%     \draw[important line,<->] (endX) node[right]{\gls{sgd} steps} -- (O) -- (endY) node[above] {\(\textcolor{ceadarkgreen}{\LossFunc{\MLmodel}}\)};
+
+%     % Ces coordonnées décident les limites de dessin au sein du graphe
+%     \coordinate (HZ) at (0,2);
+%     \coordinate (HZX) at (0,0.4);
+
+%     \coordinate (rightHZ) at (3.2, 2);
+%     \coordinate (rightHZX) at (3.2, 0.4);
+%     \coordinate (MI) at ($0.5*(rightHZ)+0.5*(rightHZX)$);
+%     \coordinate (PI) at (3,2);
+%     \coordinate (PIlow) at (3,0.5);
+%     \coordinate (PImiddle) at ($0.5*(PI)+0.5*(PIlow)$);
+%     \coordinate (Xent) at (0,1);
+
+%     % Bornes sup et inf
+%     \draw[important line, dashed, ceablue] (rightHZ) -- (HZ) node[left] {\(\entrop{\Z}\)};
+%     \draw[important line, dashed, ceared] (rightHZX) -- (HZX) node[left] {\(\entrop{\Z \given \XXX}\)};
+
+%     % MI
+%     \draw[important line, <->, ceared](rightHZ) -- (rightHZX);
+%     \draw (MI) node[right] {\(\textcolor{ceared}{\MI{\Z}{\XXX}}\)};
+
+%     % NLL loss
+%         \draw[important line, ceadarkgreen] [domain=0:1, samples=100] plot (\x, {0.5 + 1.5*exp(-0.03*\x r)});
+%         \draw[important line, ceadarkgreen] [domain=0.99:2, samples=101] plot (\x, {0.5 + 1.5*exp(-0.03*\x r)});
+%         \draw[important line, ceadarkgreen] [domain=1.99:3, samples=101] plot (\x, {0.5 + 1.5*exp(-0.03*\x r)});
+%         % PI
+%         \draw[important line, <->, ceadarkgreen] (PI) -- (PIlow);
+%         \draw[ceadarkgreen] (PImiddle) node[left] {\(\PI{\Z}{\XXX}{\MLmodelSGD}\)};
+% \end{tikzpicture}

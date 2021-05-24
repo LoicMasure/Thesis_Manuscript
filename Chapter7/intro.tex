@@ -1,0 +1,35 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%					INTRO COSADE											   %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+We have emphasized in \autoref{chap:sca} that when considering a profiled attack scenario, an evaluator can do more than just mounting an attack: he can also build a full diagnosis thanks to the leakage characterization techniques that we presented in \autoref{sec:PoIs}.
+Those techniques, such as the \gls{snr} or the T-test, have the particularity to be based on statistical tools, and so are the \glspl{gta}.
+In that sense, they form a sound tandem for the evaluator.
+
+However, we explained in \autoref{sec:counter-measures} that in presence of counter-measures such as secret-sharing or hiding, the characterization and attack methods based on those statistical tools are no longer efficient (or at least much less).
+Likewise, other dimensionality reduction techniques like dedicated variants of \gls{pca}~\cite{cagli_enhancing_2016,standaert_using_2008,eisenbarth_building_2010,choudary_efficient_2014,choudary_efficient_2015} or \gls{kda}~\cite{cagli_kernel_2017} can be used, without guarantee that relevant components are extracted.
+
+On the other hand, we have explained in \autoref{sec:review_dl_sca} that \gls{ml}-based attack methods could circumvent (to a given extent) the issues induced by the most widely used counter-measures, hence their recent hype in the \gls{sca} community over the past few years.
+Unfortunately, the emergence of those methods came with a drawback: no auxiliary characterization method were proposed to the evaluator.
+Indeed, whereas learning algorithms such as \glspl{cnn} do not require pre-processing and are at least as efficient as the other state-of-the-art profiling attacks, they act as a black-box.
+From the evaluator's point-of-view, this is not sufficient. 
+On the one hand he wants to make sure that a \gls{cnn} attack succeeded for good reasons,  \ie{}, that the learned model can generalize its good performance to new data. 
+On the other hand the evaluator may also want to help the developer to localize and understand where the vulnerability comes from in order to remove or at least reduce it.
+This issue is part of a more general problematic in Deep Learning based systems, namely their \emph{explainability} and \emph{interpretability}.
+To address it, a theoretical framework has recently been proposed by Montavon \etal{}~\cite{montavon_methods_2018}, and several methods have been tested to tackle the issue. In particular, some computer vision research groups have considered the \emph{Sensitivity Analysis}~\cite{simonyan_deep_2013,springenberg_striving_2014} framework.
+It consists in studying how the uncertainty in the output of a mathematical model or system (numerical or otherwise) can be apportioned to different sources of uncertainty 
+in its inputs~\cite{sensitivity_wiki}.
+This term encompasses many methods from simple ones, such as the computation of the derivatives if the model is differentiable or ablation/occlusion techniques~\cite{zeiler_visualizing_2013}, to the study of non-trivial variations, \eg{}, when building adversarial examples~\cite{szegedy_intriguing_2014,goodfellow_explaining_2015}.
+
+In this chapter, we propose to apply a particular Sensitivity Analysis method called \gls{gv} in order to better understand how a \gls{cnn} can learn to predict the sensitive variable based on the analysis of a single trace.
+The main claim is that \gls{cnn} based models succeed in discriminating \glspl{poi} from non-informative points, and their localization can be deduced by simply looking at the gradient of the loss function with respect to the input traces for a trained model.
+We theoretically show that this method can be used to localize \glspl{poi} in the case of a perfect model.
+The efficiency of the proposed method does not decrease when counter-measures like secret-sharing or misalignment are applied.
+In addition, the characterization can be made for each trace individually. 
+We verified the efficiency of our proposed method on simulated data and on experimental traces from both the \gls{ascad} database and the two Polymorphism datasets.
+We empirically show that Gradient Visualization is at least as good as state-of-the-art characterization methods, in presence or not of different counter-measures.
+
+The chapter is organized as follows. 
+In \autoref{sec:optimal_model} we start by considering the optimal model of an ideal attacker may get during profiling, and we deduce some properties of its derivatives with respect to the input traces that can be related to the \glspl{poi}. 
+In \autoref{sec:charac_propal} we use these properties on a model estimated with \glspl{cnn} and we explain how to practically implement the visualization method. 
+A toy example applied on simulated data is proposed for illustration. 
+Sections~\ref{sec:method_cosade} and \ref{sec:exp_res_cosade} are eventually dedicated to an experimental validation of the effectiveness of our proposal in realistic attacks scenarios.

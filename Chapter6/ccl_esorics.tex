@@ -1,0 +1,14 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%                                   CONCLUSION CHAPTER 6                       %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+So far, this chapter answers two questions likely to help both developers of secure implementations, and evaluators mounting \gls{cnn}-based \gls{sca}.
+
+From a developer's point of view, this chapter has studied the effect of two implementations of a code polymorphism counter-measure against several side channel attack scenarios, covering a wide range of potential attackers.
+In a nutshell, code polymorphism as an automated tool, is able to provide a strong protection against threat models considering automated and layman attackers, as the evaluated implementations were secure enough against our first attacker models.
+Yet, the implementations evaluated are not sound anymore against stronger attacker models.
+The soundness of software hiding counter-measures, if used alone, remains to be demonstrated against state-of-the-art attacks, for example by using other configurations of the code polymorphism toolchain, or by proposing new code transformations.  
+All in all, our results underline again, if need be, the necessity to combine the hiding and secret-sharing protection principles in a secured implementation.
+
+From an evaluator's point of view, this work illustrates how to leverage \gls{cnn} architectures to tackle the problem of large-scale side-channel traces, thereby narrowing the gap between \gls{sca} literature and concrete evaluations of secure devices where pattern detection and re-alignment are not always possible.
+The idea lies in slight adaptations of the \gls{cnn} architectures already used in \gls{sca}, eventually by exploiting the signal properties of the \gls{sca} traces.
+Surprisingly, our results emphasize that, though the use of more complex \gls{cnn} architectures has been shown to be sound to succeed \gls{sca} in the literature, it might not be a necessary condition in an \gls{sca} context.

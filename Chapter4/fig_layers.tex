@@ -1,0 +1,84 @@
+\newcommand{\inputGridFromX}{0}
+\newcommand{\inputGridFromY}{0}
+\newcommand{\inputGridToX}{3}
+\newcommand{\inputGridToY}{3}
+\newcommand{\paddingTo}{5,5}
+\newcommand{\inputUnits}{5}
+\newcommand{\dilation}{1}
+\newcommand{\outputElevation}{150}
+\newcommand{\outputBottomLeft}{0,0}
+\newcommand{\outputBottomRight}{1,0}
+\newcommand{\outputTopLeft}{0,1}
+\newcommand{\outputTopRight}{1,1}
+\newcommand{\outputTo}{3,3}
+\newcommand{\outputGridFrom}{0,0}
+\newcommand{\outputGridTo}{1,1}
+\definecolor{blue}{RGB}{38,139,210}
+\definecolor{cyan}{RGB}{42,161,152}
+\definecolor{base01}{RGB}{88,110,117}
+\definecolor{base02}{RGB}{7,54,66}
+\definecolor{base03}{RGB}{0,43,54}
+\begin{tikzpicture}[scale=.4,every node/.style={minimum size=1cm},on grid]
+	\begin{scope}[node/.append style={yslant=0.5,xslant=-0.7},yslant=0.5,xslant=-0.7]
+	    % Dessine le padding
+	    \draw[step=10mm, base03, dashed, thick] (0,0) grid (\paddingTo);
+
+	    % Dessine l'entrée
+	    % \inputUnits
+	    % \draw[draw=base03, fill=blue, thick] ({0},{1}) rectangle ({2},{3});
+	    \foreach \x in { 0,\number\numexpr 1,...,\number\numexpr \inputUnits-1 } {
+            \foreach \y in { 0,\number\numexpr 1,...,\number\numexpr \inputUnits-1 } {
+                \draw[draw=base03, fill=blue, thick] (\x,\y) rectangle
+                                        (\x+1,\y+1);
+            }
+        }
+        \draw[->](0,-0.5) -- (\inputUnits/2,-0.5) node[below]{\(\traceLength\)} -- (\inputUnits,-0.5);
+        \draw[->](-0.5,0) -- (-0.5,\inputGridToY/2) node[left]{\(\ksize\)} -- (-0.5,\inputGridToY);
+
+        % Met en évidence la zone couverte par le filtre
+        \foreach \x in { \inputGridFromX,\number\numexpr \inputGridFromX+\dilation,...,\number\numexpr \inputGridToX-1 } {
+            \foreach \y in { \inputGridFromY,\number\numexpr \inputGridFromY+\dilation,...,\number\numexpr \inputGridToY-1 } {
+                \draw[fill=base02, opacity=0.4] (\x,\y) rectangle
+                                        (\x+1,\y+1);
+            }
+        }
+        \draw[step=10mm, base03, thick] (\inputGridFromX, \inputGridFromY) grid
+                                        (\inputGridToX, \inputGridToY);
+        \coordinate (BL) at (\inputGridFromX,\inputGridFromY);
+        \coordinate (BR) at (\inputGridToX,\inputGridFromY);
+        \coordinate (TL) at (\inputGridFromX,\inputGridToY);
+        \coordinate (TR) at (\inputGridToX,\inputGridToY);
+    \end{scope}
+
+    % Scope pour la sortie de la première couche
+    \begin{scope}[xshift=-5, yshift=\outputElevation,
+                    every node/.append style={yslant=0.5,xslant=-0.7},
+                    yslant=0.5,xslant=-0.7]
+        \draw[dashed] (BL) -- (\outputBottomLeft) (BR) -- (\outputBottomRight)
+              		  (TL) -- (\outputTopLeft)    (TR) -- (\outputTopRight);
+        \draw[fill=cyan] (0,0) rectangle (\outputTo);
+        \draw[step=10mm, base03, thick] (0,0) grid (\outputTo);
+        \draw[fill=base02, opacity=0.4] (\outputGridFrom) rectangle
+                                        (\outputGridTo);
+        \draw[base03, thick] (\outputGridFrom) rectangle (\outputGridTo);
+
+        \coordinate (BL) at (\inputGridFromX,\inputGridFromY);
+        \coordinate (BR) at (\inputGridToX,\inputGridFromY);
+        \coordinate (TL) at (\inputGridFromX,\inputGridToY);
+        \coordinate (TR) at (\inputGridToX,\inputGridToY);
+    \end{scope}
+
+    % Scope pour la sortie de la seconde couche
+    \renewcommand{\outputTo}{1,1}
+    \begin{scope}[xshift=-5, yshift=\outputElevation*2,
+                    every node/.append style={yslant=0.5,xslant=-0.7},
+                    yslant=0.5,xslant=-0.7]
+        \draw[dashed] (BL) -- (\outputBottomLeft) (BR) -- (\outputBottomRight)
+              		  (TL) -- (\outputTopLeft)    (TR) -- (\outputTopRight);
+        \draw[fill=ceared] (0,0) rectangle (\outputTo);
+        \draw[step=10mm, base03, thick] (0,0) grid (\outputTo);
+        % \draw[fill=base02, opacity=0.4] (\outputGridFrom) rectangle
+        %                                 (\outputGridTo);
+        % \draw[base03, thick] (\outputGridFrom) rectangle (\outputGridTo);
+    \end{scope}
+\end{tikzpicture}

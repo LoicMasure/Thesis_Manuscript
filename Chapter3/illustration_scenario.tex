@@ -1,0 +1,27 @@
+\begin{figure}
+    \centering
+    \begin{tikzpicture}[>=stealth']
+        % Locations
+        \def\ClientToServer{++(6,0)}
+        \def\ServerToClient{++(-6,0)}
+        \def\Lifeline{++(0,-4.5)}
+        % Lifelines
+        \path (0,0)           node[draw] (Attacker) {\(\attacker\)}
+              \ClientToServer node[draw] (Target) {\(\target\)};
+        \draw (Attacker) -- \Lifeline (Target) -- \Lifeline;
+        % Blocks
+        \path (Target)
+              ++(0,-1) node (BeginProcess) {}
+              ++(0,-1) node (EndProcess)   {};
+        % \filldraw[fill=blue!30] (BeginProcess.west) rectangle (EndProcess.east);
+        % Calls 
+        \draw[->] (BeginProcess)\ServerToClient -- node[above] {\(\ppp_1,\ldots,\ppp_{\numTracesAttack}\)} (BeginProcess);
+        \draw[->] (EndProcess) -- node[above] {\(\ccctx_1, \ldots, \ccctx_{\numTracesAttack}, \textcolor{ceagray}{\xxx_1, \ldots, \xxx_{\numTracesAttack}}\)}\ServerToClient;
+        \draw[->] (EndProcess) \ServerToClient ++(0,-1) -- node[above] {\(\disting{\attackSet}\)} \ClientToServer;
+        % \draw[->] (EndProcess)\ServerToClient ++(0, -1) -- node[above] {\(\kkkHyp = \kkkTest\)?} \ClientToServer;
+        \draw[->] (EndProcess) ++ (0, -2) -- node[above] {\(\guessVec{\disting{\attackSet}}[\keyTest]\)} \ServerToClient;
+        \end{tikzpicture}
+    \caption{Black: scenario of the black-box model.
+    Grey: additional information added in the gray-box scenario.}
+    \label{fig:gray-box}
+\end{figure}

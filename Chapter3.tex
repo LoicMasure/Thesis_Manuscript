@@ -1,0 +1,104 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%									Chapter 3								   %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\chapter{Side-Channel Attacks}
+\label{chap:sca}
+\citationChap{
+	All models are wrong, but some models are useful.}{George Box}
+\minitoc
+\newpage
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Definition of a Side-Channel Attack}
+    \label{sec:attack_scenario}
+    \input{def_sca}
+
+\section{Assessing an Attack}  % Effectiveness vs efficiency
+    \label{sec:assessing_success}
+    \input{assessing_success}
+
+\section{Conditions of an Optimal Attack}  %Thm Heuser and discussion
+    \label{sec:thm_heuser}
+    \input{optimal_attack}
+
+\section{Profiled Attacks}
+    \label{sec:profiled_attacks}
+    \input{prof_attacks}
+
+\section{Unprofiled Attacks}
+    \label{sec:non_profiled_attacks}
+    \input{unprof_attacks}
+
+\section{Leakage Characterization and Pre-Processing}
+\label{sec:characterization}
+\input{characterization}
+
+\section{Counter-Measures}
+    \label{sec:counter-measures}
+    So far, we have seen that side-channel attacks may be easily exploitable by a potential attacker, as is.
+    The ultimate goal of the developers is then to design secure implementations of a cryptographic primitive, while keeping the latter one running efficiently.
+    The \gls{sca} terminology often uses the term \emph{counter-measure}, defined hereafter, to refer to protections brought to an implementation.
+    \begin{definition}[{Counter-measure~\cite[p.~167]{mangard_power_2007}}]
+        A counter-measure is a set of modifications brought to an original implementation of a cryptographic primitive aiming at avoiding or at least reducing the dependency between the leakage and the sensitive intermediate values processed by the primitive.
+        \label{def:counter-measure}
+    \end{definition}
+    Behind \autoref{def:counter-measure}, there is the idea that a developer may find a way to control the quantity of informative leakage through its implementation, despite the fact that he may not have the control on the behavior of some hardware leaky components of the target device \(\target\).
+    In that sense, this draws a link with the notion of \emph{leakage resilient} \gls{cryptography}~\cite{kalai_leakage_2019}.
+
+    When dealing with the implementation of counter-measures, the general idea is to incorporate randomness, \eg{}, by using values drawn from an \gls{prng}, unknown by the attacker during the attack phase -- although those random values may also leak themselves through the acquired traces.
+    This randomness added to the implementation will harden the key recovery in two ways.
+    First, it acts as a source of entropy which is added to the \gls{pmf} of the true leakage model.
+    This higher entropy mechanically decreases the information an attacker might optimally gather about the secret key.
+    Second, it artificially increases the leakage model ``complexity'', which may protect against attackers with bounded power to guess the true leakage model.
+
+    There are mainly two approaches in the \gls{sca} literature about the design of counter-measures:
+    \begin{itemize}
+        \item \textbf{Random data encoding}, depicted in \autoref{fig:illustration_masking}: the developer uses a source of randomness to change the way any sensitive variable are encoded in the algorithm at each new execution.
+        \item \textbf{Random primitive code}, depicted in \autoref{fig:illustration_hiding}: the developer uses a source of randomness -- depicted as \(\$\) -- to change at each execution the way the elementary operations of the algorithm are processed while keeping their semantic constant.
+        The random behavior in the elementary operations induces many different random patterns -- denoted by \(\xxx_i\) in \autoref{fig:illustration_hiding} -- at each new execution, even if the plaintexts and the encryption key remain constant.
+    \end{itemize}
+    % Illustrations
+    \begin{figure}
+        \centering
+        \begin{subfigure}{0.49 \textwidth}
+            \input{fig_masking}
+            \caption{Random data encoding.}
+            \label{fig:illustration_masking}
+        \end{subfigure}
+        \begin{subfigure}{0.49 \textwidth}
+            \input{fig_hiding}
+            \caption{Random primitive code.}
+            \label{fig:illustration_hiding}
+        \end{subfigure}
+        \caption{The two families of counter-measures in \gls{sca}.}
+        \label{}
+    \end{figure}
+
+    The former approach is detailed in \autoref{sec:masking}, while the latter approach is detailed in \autoref{sec:hiding}.
+
+    \input{masking}
+    \input{hiding}
+
+\section{Overview of the Used Datasets}
+    \label{sec:datasets}
+    \input{datasets}
+
+\section{Conclusion}
+    In this chapter, we have presented the attack scenario considered in this thesis.
+    Starting from the so-called ``gray-box'' scenario (\autoref{sec:attack_scenario}), the latter one may be augmented with a preliminary profiling phase with the help of an open-sample clone device of the target.
+    This leads to the profiling attack scenario presented here (\autoref{fig:prof_scenario}).
+    We have stated that in this scenario, the attack is jointly defined by two elements: the choice of the distinguisher (\autoref{def:distinguisher}), and the design of the leakage model.
+    In particular, the profiling phase aims at estimating the true leakage model as precisely as possible, in order to reach a satisfying solution of the fundamental goal of the \gls{sca} evaluator, as stated by \autoref{final_task} and \autoref{thm:opt_sol_prob1}.
+
+    From a practical perspective, the design of the leakage model often requires a preliminary dimensionality reduction, \eg{}, with the help of a \glspl{poi} selection method.
+    We have briefly presented two statistical tools in \autoref{sec:PoIs} enabling such a selection, illustrated in the presentation of the datasets investigated through the experiments of this thesis (\autoref{sec:datasets}).
+
+    Regarding the way that the vulnerabilities of a leaky device could be exploited by potential attackers, a developer is not unarmed.
+    Hopefully, he can indeed control the quantity of informative leakage resulting from the execution of the targeted implementation through several means, namely the randomization of the sensitive data encoding (\aka{} secret-sharing, \autoref{sec:masking}) or the randomization of the operations (\aka{} hiding, \autoref{sec:hiding}).
+    Provided with those counter-measures, the developer has the power to trade off runtime and memory performance against security.
+
+    Yet, several questions remain unanswered at the end of this chapter.
+    Indeed, although we have presented the attack techniques against unprotected implementations, we did not thoroughly discussed how the attacker can adapt its techniques -- or even adopt new ones -- to the counter-measures presented so far.
+    This issue will be investigated in \autoref{chap:ches_20}, when we will address the efficiency of neural networks as a way to modelize the posterior conditional \gls{pmf} of the leakage, for a protected implementation.
+
+    Besides, we have quickly mentioned to what extent the machine learning techniques can be integrated to the profiling attack framework presented in this chapter.
+    In \autoref{chap:machine_learning}, we will dive in more details about this fact, and we will see that the profiling attack framework and the machine learning framework are somehow intertwined.

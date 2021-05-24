@@ -1,0 +1,13 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%                       PARTIAL CONCLUSION                                     %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+The results we have stated so far are threefold.
+
+First, it has been argued that addressing the profiled \gls{sca} optimization problem may be done by considering the Leakage Assessment -- \ie{} \autoref{leak_assess} -- aiming at finding a model extracting the most perceived information, rather than choosing, for example, the model maximizing the accuracy.
+
+Second, the loss function we are usually minimizing, namely the \gls{nll} loss can be interpreted as a perceived information to maximize. 
+That is why in \autoref{sec:simus} and \autoref{sec:experiments}, we will plot the \gls{pi}, as computed with \autoref{eq:ePI_eq_NLL_loss}, since it will enable to replace the accuracy in order to compare and evaluate the efficiency of a trained model.
+
+Third, to discuss the tightness of Inequality~\eqref{eq:sup_ePI}, we can decompose the gap into three terms, namely the approximation error, the estimation error and the optimization error. 
+Each error term refers to a restriction in the capacity of an evaluator.
+The experiments conducted in Sections~\ref{sec:simus} and~\ref{sec:experiments} study the practical impact of each term.

@@ -1,0 +1,74 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%                               MÉTHODE CHAPTER 7	                           %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+So far we have claimed that relevant information can be extracted from the loss gradient of a differentiable model.
+Following this idea, it has been shown to be efficient to localize \glspl{poi} on simulated data and we validated that this method might overcome some weaknesses of state-of-the-art techniques.
+We now plan to experimentally verify these claims on three experimental datasets.
+
+We first conduct comprehensive experimentations on the \gls{ascad} datasets.
+Before introducing the results in \autoref{sec:exp_res_cosade}, we first describe our investigations.
+In \autoref{sec:cnn_archi_cosade}, we present the \gls{cnn} architecture used for profiling, and \autoref{sec:settings_cosade} gives an exhaustive description of all the considered parameters for our experiments.
+
+Then, we also verify the soundness of the \gls{gv} method over the two polymorphism datasets.
+The results are reported in \autoref{sec:gv_claps}.
+
+\subsection{CNN Architecture}
+\label{sec:cnn_archi_cosade}
+For these experiments, we consider a \gls{vgg}-based architecture, that we recall hereafter:
+\begin{equation}\label{eq:vgg_archi_cosade}
+	\MLmodel = 
+	\softmax \circ \linLayer_{\card{\sensVarSet}} \circ [\actLayer \circ \linLayer_\linSize]^{n_1}
+	\circ [\poolLayer_\pstride \circ \actLayer \circ \BNLayer \circ \convLayer_{\ksize, \numFilters}]^{n_2} \circ \BNLayer \enspace ,
+\end{equation}
+where \(\convLayer_{\ksize, \numFilters}\) denotes a convolutional layer made of \(\numFilters\) filters of size \(\ksize\), \(\BNLayer\) denotes a batch-normalization layer, \(\actLayer\) denotes the \gls{relu} activation function, \(\poolLayer_{\pstride}\) denotes an average pooling layer of size \(\pstride\), \(\linLayer_{\linSize}\) denotes a dense layer, and \(\softmax\) denotes the softmax layer.
+Furthermore, the composition \([\poolLayer_{\pstride} \circ \actLayer \circ \BNLayer \circ \convLayer_{\ksize, \numFilters}]\) is denoted as a convolutional \emph{block}.
+Likewise, \([\actLayer \circ \linLayer]\) denotes a dense block.
+We note \(n_1\) (resp. \(n_2\)) the number of dense blocks (resp. convolutional blocks).
+The details of this architecture have been presented in \autoref{sec:pres_architectures}.
+We chose this architecture since it is the baseline used in the works of Benadjila \etal{}~\cite{prouff_study_2018} introducing the \gls{ascad} database on which we work -- see \autoref{sec:ascad}.
+
+As the ultimate goal is not to get the best architecture as possible, but rather having a simple and efficient one, a lighter baseline has been chosen compared to the original architecture proposed in the authors' work: 
+\begin{itemize}
+	\item The number of filters in the first layers has been decreased, \ie{}, \(\numFilters_0 = 10\) instead of 64, though it is still doubled between each block: 
+	\begin{equation}
+		\numFilters_i = \max(512, \numFilters_0 \times 2^i) \enspace ,
+	\end{equation}
+	where \(\numFilters_n\) denotes the number of filters at the \(i\)-th convolutional block for \(i \leq n_2\) and the filter size has been set to \(\ksize=5\).
+	\item The dense layers contain less neurons: \(\linSize = 1,000\) instead of 4,096.
+	\item The last pooling layer is global -- see \autoref{sec:cnn_archi_esorics} -- \ie{}, its pooling size equals the width of the feature maps in the last convolutional layer, so that each feature maps are reduced to one point.
+	While it drastically reduces the number of neurons in the first dense layer and thereby its number of weights to learn, the global pooling layer also forces the convolutional filters to better localize the discriminative features~\cite{zhou_learning_2016}.
+\end{itemize}
+
+\subsection{Settings of the Experiments}
+\label{sec:settings_cosade}
+Our experiments have been done with the \(50,000\) \gls{em} traces from the \gls{ascad} database, presented in \autoref{sec:ascad}.
+Each trace is made of \(700\) time samples.%
+\footnote{
+	It corresponds to 26 clock cycles.
+}
+Hereafter, the three different configurations investigated in this chapter are presented with the notations taken from \cite{prouff_study_2018}. 
+For each experiment we precise the label to be learned.
+This label is known during the profiling phase but not during the attack phase:
+\begin{itemize}
+	\item \textbf{Experiment 1 (no counter-measure)}: the traces are synchronized, the label to learn is \(\Z = \Sbox(\Pt \plusgf \keyTest) \plusgf \rout\), where \(\rout\) is a random share used to protect the leakage of the \(\Sbox\) output -- see \autoref{sec:ascad}.
+	In other terms, \(\rout\) is assumed here to be known, like \(\Pt\).
+	The traces correspond to the dataset \verb+ASCAD.h5+, and the labels are recomputed from the \verb+metadata+ field of the \verb+hdf5+ structure.
+    \item \textbf{Experiment 2 (artificial shift)} : the labels are the same as in Exp.~1 but the traces are  artificially shifted to the left of a random number of points drawn from a uniform distribution over \(\llbracket0, 100\rrbracket\).
+    The traces correspond to the dataset \verb+ASCAD_desync100.h5+.
+	\item \textbf{Experiment 3 (synchronized traces, with secret-sharing)}: we target \(\Z = \Sbox(\Pt \oplus \keyTest)\), \ie{}, we have no knowledge anymore of the random share \(\rout\) -- neither during profiling or attack phase. Concretely, the traces correspond to the dataset \verb+ASCAD.h5+ and the labels are directly imported from the field \verb+labels+ in the \textsf{hdf5} structure.
+\end{itemize}
+It is noticeable that in every case, as the key is fixed, and both the plaintext and the share \(\rout\) are completely random and independent.
+Therefore, the labels are always balanced.
+
+Following the results presented in \autoref{chap:ches_20}, we use the \gls{nll} as a loss function.
+The settings have been made so that any experiment is reproducible: random seeds are known, and all the settings of the \gls{gpu} are set to avoid stochastic behavior.%
+\footnote{Usually, forcing the \gls{gpu} to have a fully deterministic behavior implies worse runtime performance.}
+For each tested neural network architecture, a \(5\)-fold \emph{cross-validation} strategy has been followed. Namely, the \gls{ascad} database has been split into \(5\) sets \(\mset{S}_1, \ldots, \mset{S}_5\) of \(10,000\) traces each, and the \(i\)-th cross-validation, denoted by \(\mathrm{CV}_i\), corresponds to a training dataset \(\trainSet=\cup_{j\neq i} \mset{S}_j\) and a validation dataset \(\valSet = \mset{S}_i\).
+The given performance metrics and the visualizations are averaged over these 5 folds. 
+The optimization is done with the \gls{adam} algorithm -- see \autoref{sec:optim_algo}.
+The learning rate is always set to \(10^{-4}\).
+Likewise, the batch size has been fixed to \(64\).
+For each training, we operate 100 epochs, \ie{} each couple \((\xxx_i, \z_i)\) is passed 100 times through an iteration of the optimization algorithm, and we keep as the best model the one that has the lowest \gls{ge} on the validation set.%
+\footnote{
+	Following the discussion in \autoref{chap:ches_20}, the other \gls{ml} metrics are ignored.
+}

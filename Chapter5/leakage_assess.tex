@@ -1,0 +1,90 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%                               LEAKAGE ASSESSMENT PROBLEM                     %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+The problem substitution that we present in this section comes as a direct consequence of a series of works stating a close link between \(\numTracesAttackOpt(1, \beta)\), namely the efficiency corresponding to the optimal solution to \autoref{final_task_prof}, and the \gls{mi} between the target sensitive variable and the leakage.
+We briefly recall this link hereafter in \autoref{sec:link_mi_na}, before stating its interest in our context in \autoref{sec:link_mi_pi}.
+
+\subsection{The Link between \gls{mi} and \gls{sca} Efficiency}
+\label{sec:link_mi_na}
+Mangard \etal{}~\cite{mangard_hardware_2004,mangard_power_2007} have first stated a link between the \gls{sca} efficiency and \(\rho\), the correlation coefficient between the true leakage and its model, in the case of first-order leakage.
+Following the notations introduced in \autoref{eq:cpa_leakage_model} and \autoref{eq:dist_cpa}, the authors show that:
+\begin{equation}
+    \numTracesAttack \left(\cpa{\attackSet}, 1, \beta \right) = 3 + 8 \frac{p_{1-\beta}^2}{\log^2{\frac{1-\rho}{1+\rho}}} \approx \frac{28}{\rho^2} \enspace ,
+    \label{eq:mangard_04}
+\end{equation}
+where \(\beta \in [0,1]\) is the threshold defined in \autoref{eq:eff_sr}, \(p_{1-\beta}\) is a tabulated constant given by a statistical test.
+Later, Mangard \etal{} have emphasized a link between the correlation coefficient and the \gls{mi} of a first-order additive Gaussian noise leakage model~\cite{mangard_one_2011}:
+\begin{equation}
+    \MI{\XXX[t]}{\Z} = -\frac{1}{2} \log_2\left(1 - \rho^2(\XXX[t], \varphi(\Z))\right) \approx \frac{ \rho^2(\XXX[t], \varphi(\Z))}{2} \enspace .
+    \label{eq:mangard_11}
+\end{equation}
+By combining \autoref{eq:mangard_04} and \autoref{eq:mangard_11}, we get a first link between the \gls{mi} and the \gls{cpa} efficiency:
+\begin{equation}
+    \numTracesAttack \left(\cpa{\attackSet}, 1, \beta \right) \propto \frac{1}{\MI{\XXX[t]}{\Z}} \enspace .
+    \label{eq:mi_na_cpa}
+\end{equation}
+Unfortunately, the link emphasized in \autoref{eq:mi_na_cpa} implicitly involves the value of the \gls{snr} of the univariate leakage, which implies that this statement does not necessarily holds for any arbitrary leakage model.
+Even when considering univariate leakages, this only covers the efficiency of a \gls{cpa}, and not necessarily the optimal attack.
+
+The later issues have drawn a great interest into the \gls{sca} community, especially in view of the counter-measures used in \gls{sca}.
+Following the results of Prouff \etal{}~\cite{prouff_masking_2013} and Duc \etal{}~\cite{duc_unifying_2019} in proving the soundness of higher-order secret-sharing schemes against \gls{sca}, the latter authors have extended \autoref{eq:mi_na_cpa} to an optimal attacker in presence of such a scheme~\cite[Eq.~18]{duc_making_2019}.%
+\footnote{
+    The threat model of Duc \etal{}'s works~\cite{duc_making_2019,duc_making_2019} also covers attackers with adaptive message strategies, which is not necessarily the case of other similar results presented in this subsection.
+    Yet, as stated in \autoref{sec:beyond_scenario}, adaptive strategies are beyond the scope of this thesis.
+}
+If \(\MI{\XXX}{\Z_i}\) denotes the \gls{mi} between a leakage \(\XXX\) and one share \(\Z_i\) of the sensitive target variable \(\Z\),%
+\footnote{
+    And assuming to simplify that the \glspl{mi} between \(\XXX\) and every share \(\Z_i\) are of the same order of magnitude.
+}
+then one can bound \(\numTracesAttackOpt(1, \beta)\), namely the efficiency corresponding to the optimal solution to \autoref{final_task_prof}, as follows:
+\begin{equation}
+    \frac{cst \cdot \beta}{\MI{\XXX}{\Z_i}^{\order/2}} \leq \numTracesAttackOpt(1, \beta) \enspace ,
+\end{equation}
+where \(cst\) is a constant, and \(\order\) is the order of the secret-sharing scheme.
+
+The works of Chésirey \etal{} at \textsc{Ches} 2019~\cite{chesirey_best_2019} extend the previous results to any arbitrary leakage model:
+\begin{equation}
+    \frac{f(\beta)}{\MI{\Z}{\XXX}} \leq \numTracesAttackOpt(1, \beta) \enspace ,
+    \label{eq:chésirey}
+\end{equation}
+where \(f\) is a known, invertible, strictly increasing function defined in the authors' paper.
+
+In other words, one is ensured that no attack can succeed with a success rate higher than \(\beta\) within \(\left\lceil \frac{f(\beta)}{\MI{\Z}{\XXX}} \right\rceil\) queries to the target device \(\target\).
+Chésirey \etal{} argue that the lower \(\numTracesAttackOpt\), the tighter Inequality~\eqref{eq:chésirey}.
+Nevertheless, from the point of view of conservative security evaluations, it remains interesting to compute the value of the left-hand side in Inequality~\eqref{eq:chésirey}, no matter the value of \(\numTracesAttackOpt\).
+
+\subsection{The Link between \gls{mi} and \gls{pi}}
+\label{sec:link_mi_pi}
+Unfortunately, computing the \gls{mi} in the denominator also requires to perfectly know the true \gls{pmf} \(\prob{\Z \given \XXX}\).
+Like with the profiled \gls{sca} optimization problem -- \ie{} \autoref{final_task_prof} -- and the supervised classification problem -- \ie{} maximizing the accuracy -- this cannot be assumed in practice.
+To circumvent this issue, we can fortunately use the notion of \gls{pi} extending the \gls{mi} to accept \glspl{pmf} estimations~\cite{renauld_formal_2011}.
+\begin{definition}[Perceived Information~\cite{bronchain_leakage_2019}]
+    Let \(\MLmodel: \leakSpace \rightarrow \probSet{\sensVarSet}\).
+    The \emph{Perceived Information} between \(\Z\) and \(\XXX\) for the model \(\MLmodel\) is denoted by \(\PI{\Z}{\XXX}{\MLmodel}\) and defined as:
+    \begin{equation}
+      \PI{\Z}{\XXX}{\MLmodel} \eqdef \entrop{\Z} +
+      \sum_{\sensValue \in \sensVarSet} \prob{\Z = \sensValue}
+      \esper[\XXX \given \Z = \sensValue]{\log_2 \MLmodel(\XXX)[\sensValue]} \enspace .
+      \label{eq:PI}
+    \end{equation}
+\end{definition}
+Intuitively, when the \gls{pmf} \(\prob{\Z \given \XXX}\) is perfectly learned, the \gls{pi} equals the \gls{mi}, otherwise the first one is always lower than the latter 
+one~\cite{bronchain_leakage_2019}.
+This is of great interest here since it enables to derive an upper bound of the left-hand side in Inequality~\eqref{eq:chésirey}, namely
+\begin{equation}
+	\frac{f(\beta)}{\MI{\Z}{\XXX}} \leq \frac{f(\beta)}{\PI{\Z}{\XXX}{\MLmodel}} \eqdef \numTracesAttackEst{\MLmodel, \beta} \enspace .
+\end{equation}
+We may shorten the previous notation to \(\numTracesAttackEst{\MLmodel}\) when \(\beta\) is implicitly set to the value \(90\%\).
+Moreover, we can then compare different models in terms of their \gls{pi}: the higher the \gls{pi}, the lower the distance to \gls{mi} and thereby the better the approximation of \(\frac{f(\beta)}{\MI{\Z}{\XXX}}\) by \(\numTracesAttackEst{\MLmodel}\).
+This leads to introduce a new intermediate problem, named \emph{Leakage Assessment}.
+\begin{problem}[Leakage Assessment]
+    \label{leak_assess}
+    Given a profiling set \(\trainSet \eqdef \{(\xxx_1, \z_1), \ldots, (\xxx_{\numTracesProf},\z_{\numTracesProf})\}\), find the model \(\MLmodelMLE{\trainSet}\) maximizing the \gls{pi} over \(\trainSet\), \ie{} such that:
+    \begin{equation}
+        \forall \MLmodel \in \hypoclass, \enspace \PI{\Z}{\XXX}{\MLmodelMLE{\trainSet}} \geq \PI{\Z}{\XXX}{\MLmodel} \enspace .
+    \end{equation}
+\end{problem}
+
+At this point, we have argued that addressing the Leakage Assessment Problem is \textit{sound} for the profiled \gls{sca} optimization problem -- \ie{} \autoref{final_task_prof} -- in the sense that it will enable to estimate a lower-bound of the optimal solution \(\numTracesAttackOpt\) of the latter problem.
+The following section aims at deeply studying \autoref{leak_assess}.
+We will show that training deep learning models with the \gls{nll} loss is asymptotically equivalent to this problem which implies that conducting profiled \gls{sca} with deep learning can be argued to be relevant within this framework.

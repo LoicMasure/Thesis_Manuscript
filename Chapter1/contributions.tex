@@ -1,0 +1,33 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%							CONTRIBUTIONS									   %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+The observations reported in \autoref{sec:drawbacks_dl} are specifically at the origin of this thesis, whose common thread is to bring trust in \gls{dl} algorithms by better understanding their behavior and their potential in an \gls{sca} context.
+
+I, for one, truly believe that such tools, without necessarily triggering a Copernican revolution of the whole field of embedded \gls{cryptography}, can still represent a milestone by drastically improving some attacks against targets whose robustness was so far taken for granted, an to incite developers to not rely on some potential weaknesses of such attackers: paradoxically, this might therefore improve the security of embedded electronic devices.
+For these reasons, it seemed to me that it was worth further investigating this line of works.
+The contributions presented in this thesis aim at grounding the use of \gls{dl} in an \gls{sca} context, at different steps of an evaluation workflow.
+
+
+\paragraph{Theoretical Study of Deep Learning in Side-Channel Analysis.}
+In \autoref{chap:ches_20}, we revisit the \gls{dl}-based \gls{sca} approach under the theoretical framework of statistical learning.
+The latter framework is by the way formally presented in \autoref{chap:machine_learning}.
+We analyze how the goal of the evaluator, namely finding the optimal attack in view of assessing the worst-case scenario, is translated into a machine learning problem and to what extent the approach is sound.
+This leads to confirm that the choice of the loss function has a meaning from an \gls{sca} point of view, since the values returned by the loss function can be linked to the efficiency of an attack.
+With this finding in mind, it is therefore possible to precisely assess the soundness of a software or hardware protection brought to the target device.
+We have indeed verified that \glspl{dnn} could efficiently address the key recovery in presence of different counter-measures, such as (high order) secret-sharing or hiding.
+
+\paragraph{The Use of Convolutional Neural Networks in Practice.}
+As an example, we propose in \autoref{chap:dl_sca_practice} a case study of a software device protected by a code polymorphism counter-measure, consisting in changing the machine translated from a source file programming a cryptographic primitive.
+Such a protection implies technical challenges in view of the \gls{dl}-based attack, as the acquired leakage measurements are of very high -- \ie{} around \(10^5\) time samples -- dimensionality.
+The \gls{dl}-based literature being mostly inspired from computer vision, the different algorithms are not adapted anymore to those kind of data.
+We propose slights modifications to the design of \glspl{dnn} to circumvent this issue.
+
+\paragraph{Gradient Visualization for General Characterization in Profiling Attacks.}
+Finally, we tackle in \autoref{chap:gradient_viz} the problem of the interpretability of \glspl{dnn} to show that such algorithms may not be only seen as black-box models in an \gls{sca} context.
+By analyzing the specific properties of our problem, we are able to propose a simple method, so far known to be sub-optimal in other fields such as computer vision, but efficient in \gls{sca} to emphasize the time samples that carry the informative leakage in the measured data, the so-called \glsfirstplural{poi}.
+The advantage of this method is that its efficiency to emphasize those points works as long as the \glspl{dnn} on which it is applied is able to succeed an attack.
+Since we would have emphasized in \autoref{chap:ches_20} that \glspl{dnn}-based attacks are sound against mostly all the protected implementations, this method could potentially be applied on any evaluation of implementation.
+Compared to other methods, the characterization can be done on each acquisition separately.
+The diagnosis that an evaluator can build based on this method may enable to identify the vulnerabilities in the source code, in order to mitigate their effect on potential attacks.
+
+All together, those contributions propose some improvements of \gls{dl}-based attacks at several steps of an evaluation.

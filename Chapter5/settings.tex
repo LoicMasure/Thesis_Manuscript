@@ -1,0 +1,92 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%                           SETTINGS PAPIER CHES                               %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+To verify the tightness of the bounds, we simulate simple \(\traceLength\)-dimensional leakages from an \(n\)-bit sensitive variable \(\Z\).
+The traces are defined such that for every \(t \in \llbracket1, \traceLength\rrbracket\):
+\begin{equation}
+	\xxx_i[t] =
+	\begin{cases}
+		u_i + b_i \mbox{, if } t \notin \{t_1, \ldots, t_{\order+1}\} \\
+		\hWeight(\z_{t,i}) + b_i \mbox{ otherwise}
+	\end{cases}
+	\enspace ,
+\end{equation}
+where \((u_i)_i, (b_i)_i\) and all \((\z_{t,i})_i\) are \gls{iid} draws from the following independent random variables.
+Respectively, \(\randVar{U} \sim \mathcal{B}(n, 0.5)\),
+\(\randVar{B} \sim \mathcal{N}(0, \sigma^2)\),%
+\footnote{
+	It is recalled that \(\hWeight\) denotes the Hamming weight function, see \autoref{sec:cpa}.
+} 
+where  and where \((\z_{1,i}, \ldots, \z_{\order+1,i})\) is a \((\order+1)\)-sharing of \(\z_i\) for the bit-wise addition law.
+This example corresponds to a situation where the leakages of the shares are hidden among values having no relation with the target, but have the same marginal \gls{pmf}
+Since the \(\z_{t, i}\) are drawn uniformly, \(\hWeight(\z_{t, i})\) follows a binomial marginal \gls{pmf} so they are indistinguishable without prior knowledge. 
+Hence the choice of a binomial law for \(\randVar{U}\) when emulating non-informative components.
+In order to have an \emph{exhaustive} dataset, every possible combination of the \((\order + 1)\)-sharing has been generated and replicated \(q\) times before adding the noise, where \(q\) is given afterwards in the experiments.
+Therefore, it contains \(\card{\trainSet} = q \times 2^{(\order+1)n}\) simulated traces.
+Once the data were generated, we trained a \gls{dnn} from the hypothesis class \(\hypoclass\) of the \glspl{mlp} with \(\numLayers=1\) hidden layer made of \(\linSize = 1,000\) neurons.
+The training loss is naturally the \gls{nll} loss.%
+\footnote{
+	Beware that in Pytorch and \textsf{Tensorflow}, the \gls{nll} loss is computed with natural logarithms, whereas here one ought to consider the logarithm in base \(2\).
+}
+The training lasts, after \(T = 200\) epochs,%
+\footnote{
+	One epoch refers to the number of iterations needed to process the whole dataset through the \gls{sgd} algorithm.
+}
+by applying the \gls{sgd} algorithm with a learning rate of \(10^{-3}\).
+The trained model is denoted \(\MLmodelSGD{\trainSet}\)
+
+Our simulations comprise three main campaigns:
+\paragraph{Experiment 1} (secret-sharing only): 
+    in this experiment, we set \(\traceLength = \order+1\) in order to  avoid to consider irrelevant input features. 
+	The simulations are done over \(n = 4\) bits, \(\order \in \{0, 1, 2, 3\}\) and \(\sigma \in \{0.01, 0.1, 0.2, 0.4, 0.8, 1.6, 3.2\}\).
+	We also generate enough data so that the training set is exhaustive, \ie{}, the number of replicas is \(q = 2,000\). 
+	With such a generated dataset, we expect to make the estimation error \eqref{eq:err_est} negligible.
+	The gap between the \gls{mi} and the \gls{pi} should therefore only be composed of the optimization error~\eqref{eq:err_opt} and the approximation error~\eqref{eq:err_approx}.
+	
+\paragraph{Experiment 2} (secret-sharing, with uninformative components): 
+    in a second experiment, we have \(\traceLength = 40\), including the uninformative components. 
+	Since all components share the same margin law, we recall that they cannot be distinguished without knowing \(\Z\).
+	Compared to Experiment 1, we might expect the optimization error to be more important because of the potential difficulty induced by the presence of uninformative components. 
+	
+\paragraph{Experiment 3} (shuffling, no secret-sharing):
+	in a third experiment, we set \(\order = 0\), \(\traceLength \in \{2, 4, 16\}\); in other words, \(\traceLength - 1\) uninformative components are added like in Experiment 2, but this time they are randomly shuffled with the only informative component.
+	Note that the shuffling is different for each simulated trace so that one cannot guess in which position the informative leakage lies.
+	Therefore, we expect the information perceived by the model to be lower than without shuffling~\cite{veyrat-charvillon_shuffling_2012}.
+	Besides, \(\sigma \in \{0.04, 0.2, 0.4, 0.8, 1.6, 3.2\}\) here.
+
+
+
+\paragraph{\gls{pi} and \gls{mi} Estimation.}
+From those experiments, the \gls{pi} is estimated thanks to a \emph{hold-out} dataset of \(1/5\)-th of the size of the training set size, \ie{} those data are not used by the optimization algorithm.
+For the sake of comparison, we estimate the \gls{mi} between the target sensitive \(4\)-bit variable and its simulated leakage model with a Monte Carlo sampling of the leakage \gls{pmf} \(\prob{\XXX \given \Z}\).
+The methodology is described in \autoref{sec:monte-carlo}.
+The only difficulty is to efficiently compute the precise \gls{pmf} \(h: \sensValue \mapsto \fonction{h}{\sensValue} = \prob{\XXX = \xxx \given \Z = \sensValue}\) given a simulated trace \(\xxx\) in the presence of the counter-measures, \ie{} secret-sharing or shuffling.
+We describe hereafter of such computations can be done.
+
+\subparagraph{Secret-sharing.}
+We benefit from the technique suggested by Lomné \etal{} at \textsc{Ches} 2014~\cite{lomne_how_2014} that we recall hereafter.
+Suppose that one knows the \gls{pmf} of each share for a given leakage trace \(\xxx\), denoted as \(\fonction{h_i}{\sensValue} \eqdef \prob{\XXX = \xxx \given \Z_i = \sensValue}\), applying the total probability formula -- see \autoref{sec:probas} -- leads to:
+\begin{equation}
+    \fonction{h}{\sensValue} = 
+    \sum_{\sensValue_1}\cdots \sum_{\sensValue_{\order}} \fonction{h_0}{\sensValue \plusgf \sensValue_1 \plusgf \cdots \plusgf \sensValue_{\order}}\fonction{h_1}{\sensValue_1} \cdots \fonction{h_{\order}}{\sensValue_{\order}} \enspace .
+    \label{eq:conv_masking}
+\end{equation}
+As described above in this section, we assume for our simulations that the leakage of each share \(\z_{t,i}\) is following a Gaussian law \(\normpdf{\hWeight(\z_{t,i})}{\sigma^2}\) so we explicitly know the functions \(h_i\).
+It turns out that the right hand-side can be seen as the following convolution product \((h_0 \conv h_1 \conv \cdots \conv h_\order)(\sensValue)\) in the \gls{vecSpace} \(\gf{2}{}^n\).%
+\footnote{
+	We inform the unfamiliar reader that \(\gf{2}{n}\) denotes the finite field with \(2^n\) elements, whereas \(\gf{2}{}^n\) denotes the same set, seen as a vector space of dimensionality \(n\), with respect to the field \(\gf{2}{}\).
+}
+Discrete convolutions in \(\gf{2}{}^n\) can be efficiently computed by using a variant of the \gls{dft} called \gls{wh} transform.
+Like with a regular fast Fourier transform, this trick allows to compute \(\prob{\XXX = \xxx \given \Z}\) with a runtime complexity of \(\fonction{\mathcal{O}}{\order \cdot \card{\sensVarSet} \cdot\log{\card{\sensVarSet}}}\) instead of \(\fonction{\mathcal{O}}{\card{\sensVarSet}^\order}\) with a naive computation of \autoref{eq:conv_masking}.
+
+The outcomes of those \gls{mi} estimations are depicted by the orange, blue and pink lines in \autoref{fig:exp_MI_1} and \autoref{fig:exp_MI_2}.
+
+\subparagraph{Shuffling.}
+We benefit from the analysis conducted by Veyrat-Charvillon \etal{} at \textsc{Asiacrypt} 2012~\cite{veyrat-charvillon_shuffling_2012}. 
+The shuffling counter-measure simulated here assumes that no leakage from the permutation indices occurs, so the conditional \gls{pdf} to compute can be written as follows:
+\begin{equation}
+	\prob{\XXX = \xxx \given \Z = \sensValue} = \frac{1}{\traceLength}\sum_{j=1}^{\traceLength} \prob{\XXX = \xxx \given \Z_{j} = \sensValue} \enspace ,
+	\label{eq:prob_shuffling}
+\end{equation}
+where \(\Z_j\) denotes the random variable modelizing all the shares \(\z_{j,i}\) for \(i \in \llbracket 1, \card{\trainSet} \rrbracket\).
+Since in all the terms of the sum in \autoref{eq:prob_shuffling} except one, \(\XXX\) and \(\Z_j\) are independent, ``it boils down to consider \(\traceLength-1\) leakages out of the \(\traceLength\) as algorithmic noise''~\cite{veyrat-charvillon_shuffling_2012}.

@@ -1,0 +1,341 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%           				Macros			           						   %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Fonte
+% \renewcommand{\familydefault}{lmr}
+
+% Latin locutions
+\newcommand{\eg}{\textit{e.g.}}
+\newcommand{\ie}{\textit{i.e.}}
+\newcommand{\etal}{\textit{et al.}}
+\newcommand{\cf}{\textit{cf}}
+\newcommand{\etc}{\textit{etc.}}
+\newcommand{\aka}{a.k.a.}
+\newcommand{\resp}{resp.}
+\newcommand{\vs}{vs.}
+\newcommand{\etcol}{et coll.}
+
+% Shortcuts abbreviations
+% \newcommand{\iff}{\gls{iff}}
+\newcommand{\pmf}{\gls{pmf}}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%								Cryptography								   %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% AES
+\DeclareMathOperator{\Sbox}{Sbox}
+\DeclareMathOperator{\encc}{\mathbf{E}}
+\DeclareMathOperator{\miniEncc}{\mathbf{C}}
+\newcommand*{\encrypt}[1]{\fonction{\mathrm{\encc}}{#1}}
+\newcommand*{\miniEncrypt}[1]{\fonction{\miniEncc}{#1}}
+
+% AES operations
+\newcommand*{\ark}{\textsf{AddRoundKey}}
+\newcommand*{\sub}{\textsf{SubBytes}}
+\newcommand*{\sr}{\textsf{ShiftRows}}
+\newcommand*{\mc}{\textsf{MixColumns}}
+\newcommand*{\ks}{\textsf{KeySchedule}}
+
+% Variable plaintext
+\newcommand{\p}{\varObs{p}}
+\newcommand{\Pt}{\randVar{P}}
+\newcommand{\ppp}{\vectObs{p}}
+\newcommand{\PPP}{\randVect{P}}
+\newcommand{\plaintextSet}{\mset{P}}
+
+% Ciphertext
+\newcommand{\ctx}{\varObs{c}}
+\newcommand{\ccctx}{\vectObs{c}}
+
+% Secret key
+\newcommand{\key}{\varObs{k}}
+\newcommand{\kkk}{\vectObs{k}}
+\newcommand{\K}{\randVar{K}}
+\newcommand{\KKK}{\randVect{K}}
+\newcommand{\keyTest}{\key^{\star}}
+\newcommand{\kkkTest}{\kkk^{\star}}
+\newcommand{\keyHyp}{\widehat{\key}}
+\newcommand{\kkkHyp}{\widehat{\kkk}}
+\newcommand{\keySet}{\mathcal{K}}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% 								Mathematics 			  					   %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% Sets and structures
+\newcommand{\realSet}{\mathbb{R}}
+\newcommand{\cplex}{\gls{cplex}}
+\newcommand{\natSet}{\mathbb{N}}
+\newcommand{\zSet}{\mathbb{Z}}
+\newcommand{\mset}[1]{\ensuremath{\mathcal{#1}}}
+\newcommand{\card}[1]{\ensuremath{\left|#1\right|}}
+
+\newcommand{\charac}[1]{\mathbf{1}_{#1}}
+
+% Groups and Fields
+\newcommand{\gf}[2]{\ensuremath{\mathbb{F}_{#1^{#2}}}}
+\newcommand{\gplaw}{\gls{gplaw}}
+\newcommand{\plusgf}{\oplus}
+\newcommand{\multgf}{\times}
+
+% Functions/operators
+\DeclareMathOperator*{\argmin}{argmin}
+\DeclareMathOperator*{\argmax}{argmax}
+\DeclareMathOperator*{\vvar}{Var}
+\DeclareMathOperator*{\ccov}{Cov}
+\DeclareMathOperator*{\alog}{alog}
+\DeclareMathOperator*{\conv}{\ast}
+\newcommand{\eqdef}{\gls{eqdef}}
+
+% Declare a function
+\newcommand{\decFonction}[5]{\begin{array}{l|rcl}
+	#1: & #2 & \longrightarrow & #3 \\
+		& #4 & \longmapsto & #5 \end{array}}
+\newcommand{\fonction}[2]{#1\left(#2\right)}
+
+% Vectorial calculus
+\newcommand{\norm}[1]{\left\lVert#1\right\rVert}
+\newcommand*{\partDeriv}[1]{\frac{\partial}{\partial #1}}
+\newcommand{\grad}[2][]{\nabla_{#1} #2}
+\newcommand{\jac}[2]{\fonction{\mathrm{J}_{#1}}{#2}}
+
+% Convergence
+\newcommand{\converge}[2]{\overset{#2}{\underset{#1}{\longrightarrow}}}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% 							Probability, statistics							   %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Probas
+\DeclareMathOperator*{\probb}{Pr}
+\newcommand*{\prob}[1]{\fonction{\probb}{#1}}
+\def\given{\;\mid\;}
+% \def\given{\;\middle|\;}
+\newcommand*{\probSet}[1]{\mathcal{P}(#1)}
+\newcommand{\pdf}[2]{\fonction{f_{#1}}{#2}}
+
+% Random variable
+\newcommand{\randVar}[1]{\ensuremath{\textsc{#1}}}
+\newcommand{\randVect}[1]{\ensuremath{\textsc{\textbf{#1}}}}
+\newcommand{\varObs}[1]{\ensuremath{\mathnormal{#1}}}
+\newcommand{\vectObs}[1]{\ensuremath{\mathbf{#1}}}
+
+
+\newcommand{\esper}[2][]{\underset{#1}{\mathbb{E}}\left[#2\right]}  % Expectation
+\newcommand{\var}[2][]{\underset{#1}{\vvar}\left(#2\right)}  % Variance
+\newcommand{\cov}[3][]{\underset{#1}{\ccov}\left(#2, #3\right)}  % Covariance
+\newcommand{\normpdf}[2]{\fonction{\mathcal{N}}{#1, #2}}  % Normal law
+
+% Convergences
+% \newcommand{\probConv}[1]{\underset{#1 \to \infty}{\gls{probConv}}}
+\newcommand{\probConv}[1]{\xrightarrow[#1 \to \infty]{\gls{probConv}}}
+\newcommand{\lawConv}[1]{\underset{#1 \to \infty}{\gls{lawConv}}}
+
+% Dataset
+\newcommand*{\dset}{\mset{S}}
+
+
+% Information theory
+\newcommand{\probDist}[1]{\mathrm{#1}}
+\newcommand{\entrop}[1]{\fonction{\mathsf{H}}{#1}}
+% \newcommand{\KLdiv}[2]{\fonction{\mathsf{D}}{#1 \,\vert\vert \,#2}}
+\newcommand{\MI}[2]{\fonction{\mathsf{MI}}{#1 ; #2}}
+\DeclarePairedDelimiterX{\infdivx}[2]{(}{)}{%
+  #1\;\delimsize\|\;#2%
+}
+\newcommand{\KLdiv}[2]{\mathsf{D}\infdivx{#1}{#2}}
+\newcommand{\PI}[3]{\mathsf{PI}\left(#1 ; #2 ; #3\right)}
+\newcommand{\estPI}[4]{\widehat{\mathsf{PI}_{#4}}\left(#1 ; #2 ; #3\right)}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%							Side-Channel Analysis 							   %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% Scenario
+\newcommand{\attacker}{\mathcal{A}}
+\newcommand{\target}{\mathcal{T}}
+
+% Sensitive random variables and observations
+\newcommand{\z}{\varObs{z}}
+\newcommand{\Z}{\randVar{Z}}
+\newcommand{\sensValue}{\varObs{s}}
+\newcommand{\ZZZ}{\randVect{Z}}
+\newcommand{\zzz}{\vectObs{z}}
+\newcommand{\sensVarSet}{\mset{Z}}
+
+% Masks
+\newcommand{\M}{\randVar{M}}
+\newcommand{\order}{d}
+\newcommand{\nShares}{n}
+\newcommand{\rin}{\mathsf{r_{in}}}
+\newcommand{\rout}{\mathsf{r_{out}}}
+
+% Shuffling
+\newcommand{\shufflingOrder}{c}
+
+
+% Traces
+\newcommand{\traceLength}{\ensuremath{D}}
+\newcommand*{\leakSpace}{\mathcal{X}}
+\newcommand{\x}{\varObs{x}}
+\newcommand{\X}{\randVar{X}}
+\newcommand{\xxx}{\vectObs{x}}
+\newcommand{\XXX}{\randVect{X}}
+
+% Characterization
+\DeclareMathOperator{\SNR}{SNR}
+
+% Key recovery
+\newcommand*{\attackSet}{\mset{S}_{a}}
+\newcommand{\disting}[1]{\mathcal{D}_{#1}}
+\newcommand{\MLEscore}[1]{\disting{#1}^{\mathrm{ML}}}
+\newcommand{\MLMLEscore}[2]{\disting{#1}^{#2}}
+\newcommand{\cpa}[1]{\disting{#1}^{\mathrm{CPA}}}
+\newcommand{\guessVec}[1]{\fonction{\mathbf{g}}{#1}}
+
+% Performance metrics
+\newcommand{\numTraces}[1]{N_{#1}}
+\newcommand{\numTracesAttack}{\numTraces{a}}
+\newcommand{\numTracesAttackOpt}{\numTracesAttack^{\star}}
+\newcommand{\numTracesAttackEst}[1]{\fonction{\widetilde{\numTracesAttack}}{#1}}
+\newcommand{\succOrder}{o}
+\newcommand{\geThresh}{\tau}
+\DeclareMathOperator{\GE}{GE}
+\DeclareMathOperator{\succRate}{SR}
+
+% Leakage model
+\DeclareMathOperator{\hWeight}{hw}
+
+% Attack class
+\newcommand{\attClass}[1]{\ensuremath{\mathcal{A}_{\textsf{#1}}}}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%								Machine Learning							   %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\newcommand*{\LossFunc}[2][]{\fonction{\mathcal{L}_{#1}}{#2}}
+\newcommand*{\lossFunc}[1]{\fonction{\mathcal{\ell}}{#1}}
+\newcommand*{\learningRate}{\eta}
+\DeclareMathOperator*{\acc}{Acc}
+
+% Data
+\newcommand*{\trainSet}{\mset{S}_p}
+\newcommand*{\valSet}{\mset{S}_{v}}
+\newcommand{\numTracesProf}{N_p}
+\newcommand{\numTracesVal}{N_v}
+
+
+% Model
+\newcommand*{\hypoclass}{\mathcal{H}}
+\newcommand*{\MLmodel}{F}
+\newcommand*{\MLmodelOpt}{\MLmodel^{\star}}
+\newcommand*{\vNNOutput}{\ensuremath {\textbf{y}}}
+\newcommand*{\MLparam}{\theta}
+\newcommand*{\MLparamMLE}{\hat{\MLparam}}
+\newcommand*{\MLmodelMLE}[1]{\fonction{\attacker}{#1}}
+% \newcommand*{\MLmodelMLE}[1]{\widehat{\MLmodel_{#1}}}
+\newcommand*{\MLparamSGD}{\MLparam_{SGD}}
+\newcommand*{\MLmodelSGD}[1]{\fonction{\widetilde{\attacker}}{#1}}%{\MLmodel_{#1}}}
+% \newcommand*{\MLmodelSGD}[1]{\widetilde{\MLmodel_{#1}}}
+\newcommand*{\MLparamSet}{\Theta}
+
+% Architecture
+\newcommand*{\linLayer}{\lambda}
+\newcommand*{\convLayer}{\gamma}
+\newcommand*{\poolLayer}{\delta}
+\newcommand*{\BNLayer}{\mu}
+\newcommand*{\dropLayer}{\omega}
+\newcommand*{\numLayers}{L}
+
+% Dense
+\newcommand{\linSize}{C}
+\newcommand{\dropQ}{q}
+
+% Convolution
+\newcommand*{\ksize}{W}
+\newcommand*{\pstride}{p}
+\newcommand*{\numFilters}{K}
+\newcommand*{\dConv}{V}
+
+% Activations
+\newcommand*{\actLayer}{\sigma}
+\newcommand{\softmax}{\mathrm{s}}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% 								CLAPS										   %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\newcommand*{\aeshuitbit}{\textsf{AES \(8\)-bit}}
+\newcommand*{\mbedTLS}{\textsf{mbedTLS}}
+% Macro for attack classes
+\newcommand{\attSNR}{\attClass{0}}
+\newcommand{\attCPASync}{\attClass{CPA}}
+\newcommand{\attLDADesync}{\attClass{auto}}
+\newcommand{\attLDASync}{\attClass{gT}}
+\newcommand{\attCNN}{\attClass{CNN}}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% 								COSADE										   %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Visualisation
+\newcommand*{\relevance}[1]{\mathbf{r}_{#1}}
+\newcommand*{\infoCoord}{\mathcal{I}_{\Z}}
+\newcommand*{\nbInfoCoord}{C}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+
+
+
+
+
+%% Figures centrées, et en position 'here, top, bottom or page'
+\newenvironment{figureth}{%
+		\begin{figure}[htbp]
+			\centering
+	}{
+		\end{figure}
+		}
+		
+		
+%% Tableaux centrés, et en position 'here, top, bottom or page'
+\newenvironment{tableth}{%
+		\begin{table}[htbp]
+			\centering
+			%\rowcolors{1}{coleurtableau}{coleurtableau}
+	}{
+		\end{table}
+		}
+
+%% Sous-figures centrées, en position 'top'		
+\newenvironment{subfigureth}[1]{%
+	\begin{subfigure}[t]{#1}
+	\centering
+}{
+	\end{subfigure}
+}
+
+\newcommand{\citationChap}[2]{%
+	\epigraph{``\textit{#1}''}{#2}
+}
+
+%% On commence par une page impaire quand on change le style de numérotation de pages 
+\let\oldpagenumbering\pagenumbering
+\renewcommand{\pagenumbering}[1]{%
+	\cleardoublepage
+	\oldpagenumbering{#1}
+}

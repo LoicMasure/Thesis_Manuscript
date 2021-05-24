@@ -1,0 +1,173 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%                               NOISE AMPLIFICATION PROOF                      %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+A long series of papers have been published since the seminal work of Chari \etal{} at \textsc{Crypto 1999}~\cite{chari_towards_1999} to show the noise amplification effect of group-based secret-sharing.
+The latter result has been extended by Prouff \etal{}~\cite{prouff_masking_2013} and Duc \etal{}~\cite{duc_unifying_2019,duc_making_2019,dziembowski_optimal_2016} until the most recent works of Prest \etal{} at \textsc{Crypto 2019}~\cite{prest_renyi_2019}.
+
+All these papers embrace different strategies to show the theoretical soudness of group-based secret-sharing, but most of them rely on the so-called \emph{noise amplification} effect.
+In a nutshell, it states that one can produce an \emph{artificial} noise in the leaky observations of a sensitive variable \(\Z\) protected with a \(\order\)-th order group-based secret-sharing of amplitude \(\mathcal{O}\left(\sigma^\order\right)\), where \(\sigma\) characterizes the noise of the target device without any counter-measure.
+
+We provide in this appendix a proof sketch of such a result.%
+\footnote{
+    We only focus here on one piece of the proof, so this appendix does not formally proves the soundness of group-based secret-sharing.
+    We invite the interested reader to refer to the papers cited at the beginning of this appendix.
+}
+We first recall that the leakage distribution of a sensitive random variable protected with group-based secret-sharing can be formulated as a convolution product.
+This observation enables to benefit from the properties of convolutions to reach the result.
+
+\section{The Link between Noise Amplification and Convolution}
+We start by remarking that applying group-based secret-sharing can be seen as applying a discrete convolution to the unprotected leakage model.
+\begin{proposition}[{\cite[Sec.~6]{lomne_how_2014}}]
+    Let \(\Z \in \sensVarSet\) be a sensitive target variable, protected by a \(\order\)-th order secret-sharing with shares \(\Z_0, \ldots, \Z_{\order} \in \sensVarSet\).
+    Let \(\XXX = (\X_0, \ldots, \X_\order)^\intercal\), and \(\xxx = (\x_0, \ldots, \x_\order)^\intercal\) be an observation of \(\XXX\).
+% 
+    Let \(h: \sensValue \mapsto \prob{\Z = \sensValue \given \XXX = \xxx}\) be the posterior \gls{pmf} of the sensitive target variable, while \(h_i: \sensValue \mapsto \prob{\Z_i = \sensValue \given \X_i = \x_i}\) denotes the posterior \gls{pmf} associated to the share \(\Z_i\).
+% 
+    Assume that the following claims hold:
+    \begin{enumerate}
+        \item[(a)] The random variables \(\Z\) and \((\Z_i)_{i\in \llbracket 1, \order \rrbracket}\) are \gls{iid} uniformly from the group \((\sensVarSet, \gplaw)\);
+        \item[(b)] Any \(\X_i\) only depend on \(\Z_i\), \ie{}, \(\X_i\) denotes the leakage of the share \(\Z_i\).
+        In particular, any \(\X_i\) is independent of the \((\X_j)_{j \neq i}\).
+    \end{enumerate}
+% 
+    Then, the posterior \gls{pmf} of \(\Z\) can be formulated as a discrete convolution product:
+    \begin{equation}
+        h(\sensValue) = \sum_{\sensValue_1}\cdots \sum_{\sensValue_{\order}} 
+        \fonction{h_0}{\sensValue \gplaw (\sensValue_1 \gplaw \ldots \gplaw \sensValue_{\order})^{-1}}\fonction{h_1}{\sensValue_1} \ldots \fonction{h_{\order}}{\sensValue_{\order}} = (h_0 \conv h_1 \conv \ldots \conv h_d)(\sensValue) \enspace .
+    \end{equation}
+\end{proposition}
+\begin{proof}
+    By applying the Bayes' theorem we get:
+    \begin{eqnarray}
+        h(\sensValue) & = & \frac{\prob{\Z = \sensValue}}{\prob{\XXX = \xxx}} \prob{\XXX = \xxx \given \Z = \sensValue} 
+        \label{eq:bayes_thm_proof}
+    \end{eqnarray}
+    Using the total probabilities formula \(\order\) times, we expand the term \(\prob{\XXX = \xxx \given \Z = \sensValue} \) as follows:
+    \begin{multline}
+        \prob{\XXX = \xxx \given \Z = \sensValue} = 
+        \sum_{\sensValue_1 \in \sensVarSet} \ldots \sum_{\sensValue_{\order} \in \sensVarSet}
+        \prob{\XXX = \xxx \given \Z = \sensValue, \Z_1 = \sensValue_1, \ldots \Z_{\order} = \sensValue_{\order}} \cdot \\
+        \prod_{i=1}^{\order}\prob{\Z_i = \sensValue_i} \enspace .
+        \label{eq:total_prob}
+    \end{multline}
+    By noting \(\sensValue_0 \eqdef \sensValue \gplaw (\sensValue_1 \gplaw \ldots \gplaw \sensValue_{\order})^{-1}\), and since the mapping \((\sensValue, \sensValue_1, \ldots \sensValue_{\order}) \mapsto (\sensValue_0, \sensValue_1, \ldots \sensValue_{\order})\) is invertible we may reformulate the conditional probability as follows:
+    \begin{eqnarray}
+        \prob{\XXX = \xxx \given \Z = \sensValue, \Z_1 = \sensValue_1, \ldots \Z_{\order} = \sensValue_{\order}}
+        & = &
+        \prob{\XXX = \xxx \given \Z_0 = \sensValue_0, \ldots \Z_{\order} = \sensValue_{\order}} \enspace .
+        \label{eq:bij_mapping}
+    \end{eqnarray}
+    Moreover, according to assumption (b), we have:
+    \begin{eqnarray}
+        \prob{\XXX = \xxx}
+        & = & \prod_{i = 0}^{\order} \prob{\X_i = \x_i} \enspace ,
+        \label{eq:indep_marginal} \\
+        \prob{\XXX = \xxx \given \Z_0 = \sensValue_0, \ldots \Z_{\order} = \sensValue_{\order}}
+        & = & \prod_{i = 0}^{\order} \prob{\X_i = \x_i \given \Z_i = \sensValue_i}  \enspace .
+        \label{eq:indep_posterior}
+    \end{eqnarray}
+    Finally, we may use the assumption (a) to remark that:
+    \begin{equation}
+        \prob{\Z = \sensValue} = \prob{\Z_0 = \sensValue_0} \enspace .
+        \label{eq:Z_uniform}
+    \end{equation}
+    We may now combine Equations \eqref{eq:bayes_thm_proof}, \eqref{eq:total_prob}, \eqref{eq:bij_mapping}, \eqref{eq:indep_marginal}, \eqref{eq:indep_posterior} and \eqref{eq:Z_uniform}:
+    \begin{eqnarray*}
+        h(\sensValue)
+        & = & 
+        \sum_{\sensValue_1 \in \sensVarSet} \ldots \sum_{\sensValue_{\order} \in \sensVarSet} \prod_{i=0}^{\order}
+        \frac{\prob{\X_i = \x_i  \given \Z_i = \sensValue_i}\prob{\Z_i = \sensValue_i}}{\prob{\X_i = \x_i}} \\
+        & = & \sum_{\sensValue_1 \in \sensVarSet} \ldots \sum_{\sensValue_{\order} \in \sensVarSet} \prod_{i=0}^{\order}
+        \prob{\Z_i = \sensValue_i \given \X_i = \x_i} \\
+        & = & \sum_{\sensValue_1 \in \sensVarSet} \ldots \sum_{\sensValue_{\order} \in \sensVarSet} 
+        \fonction{h_0}{\sensValue \gplaw (\sensValue_1 \gplaw \ldots \gplaw \sensValue_{\order})^{-1}} \fonction{h_1}{\sensValue_1} \cdot \ldots \cdot \fonction{h_{\order}}{\sensValue_{\order}}
+    \end{eqnarray*}
+    In other words, \(h(\sensValue) = (h_0 \conv h_1 \conv \ldots \conv h_d)(\sensValue)\).
+\end{proof}
+
+Seeing the likelihood \gls{pmf} of the sensitive variable \(\Z\) as a convolution product provides an intuitive insight about the soundness of secret-sharing.
+Indeed, convolutions are well known in signal processing to be \emph{regularizing} operators, \ie{}, they may transform any \emph{sharp} signal as a \emph{smooth} one.
+These properties can somehow be translated into the discrete world, as we will see hereafter.
+
+\section{A Fixed-Point-Like Proof}
+To show the smoothing effect of discrete convolutions, we first introduce a lemma, stating that the uniform \gls{pmf} is a fixed point of the convolution operator.
+\begin{lemma}
+    \label{thm:idempotent}
+    Let \(h \in \probSet{\sensVarSet}\) be a \gls{pmf} over the set \(\sensVarSet\), and \(u\) the uniform \gls{pmf} over the same set.
+    Then
+    \begin{equation}
+        h \conv u = u.
+    \end{equation}
+\end{lemma}
+\begin{proof}
+    For any \(\sensValue \in \sensVarSet\), we have
+    \begin{equation*}
+        h \conv u (\sensValue)  =  \sum_{\sensValue'} \fonction{h}{\sensValue \gplaw \sensValue'^{-1}} \fonction{u}{\sensValue'} 
+        = \sum_{\sensValue'} \fonction{h}{\sensValue \gplaw \sensValue'^{-1}} \frac{1}{\card{\sensVarSet}} 
+        = \frac{1}{\card{\sensVarSet}} \sum_{\sensValue'} \fonction{h}{\sensValue \gplaw \sensValue'^{-1}} \enspace .
+    \end{equation*}
+    By definition of a \gls{pmf}, the latter sum equals one, so \(h \conv u (\sensValue)\) does not depend on \(\sensValue\): it is the uniform distribution.
+\end{proof}
+It is well known that sequences recursively defined by the application of an operator having a fixed point may converge to the latter one, under some conditions on the \glspl{pmf} \((h_i)_{i \in \llbracket 0, \order \rrbracket}\).
+The fact that the fixed point here is the uniform distribution illustrates the smoothing effect.
+The theorem we introduce hereafter follows this intuition.
+\begin{theorem}[Kloss~\cite{kloss_proba_1959}]
+    \label{thm:kloss}
+    Let \(\sensVarSet\) be a finite group, and \(h_0, \ldots, h_\order\) be \(\order+1\) \glspl{pmf} over \(\sensVarSet\).%
+    \footnote{
+        Kloss' theorem actually applies on any compact group, possibly uncountable.
+    }
+    Let \(h = h_0 \conv \ldots \conv h_\order\).
+    If for any element \(\sensValue \subset \sensVarSet\) we have:
+    \begin{equation}
+        h_i(\sensValue) > c u(\sensValue),\ c>0, i \in \llbracket 0, d \rrbracket,
+        \label{eq:assumption_kloss}
+    \end{equation}
+    where \(u\) being the uniform distribution over \(\sensVarSet\), then
+    \begin{equation}
+        \lvert h(\sensValue) - u(\sensValue) \rvert \leq \lvert 1-c \rvert^{\order+1} \enspace .
+        \label{eq:kloss}
+    \end{equation}
+\end{theorem}
+In other words, \(h\) converges towards the uniform distribution when \(\order \to \infty\) at an exponential rate, provided that \(\lvert 1 - c \rvert < 1\).
+Here, the latter quantity \(1-c\) somehow describes the original noise parameter \(\sigma\) induced by the target device on the leakages: the lower \(\lvert 1-c \rvert\), the noisier the leakages from the target device.
+Hence the noise amplification effect.
+\begin{proof}
+    Let \(h_i' = h_i - u\),
+    with \(u\) being the uniform distribution.
+    Note that \(h_i'\) may take negative values.
+    Let us prove that \(h_i' \conv u = u \conv h_i' = 0\).
+    By using \autoref{thm:idempotent}, we known that \(h_i \conv u = u\).
+    It follows that \(h_i' \conv u = (h_i - u) \conv u = h_i \conv u - u = u - u = 0\).
+    Moreover, we have \(h_0 \conv h_1 = (h_0' + u) \conv (h_1' + u) = h_0' \conv h_1' + (h_0' + h_1') \conv u + u \conv u = h_0' \conv h_1' + u\).
+    By induction, it follows that
+    \begin{equation}
+        h = h' + u \enspace ,
+        \label{eq:induction}
+    \end{equation} 
+    where \(h' = h_0' \conv \ldots \conv h_d'\).
+    Let \(q_i \eqdef h_i' + (1-c)u = h_i - cu\).
+    The main assumption of the theorem implies that \(\forall \sensValue \in \sensVarSet\), \(q_i(\sensValue) \geq 0\).
+    By analogy with \autoref{eq:induction}, we can prove that \(q \eqdef q_0 \conv \ldots \conv q_d = h' + (1-c)^{d+1}u\).
+    A convolution of non-negative functions gives a non-negative product, so \(\forall \sensValue \in \sensVarSet, \enspace q(\sensValue) \geq 0\).
+
+    Therefore, \(h = u + h' = \left[1 - (1-c)^{\order+1}\right]u + q\), \ie{}, \(\forall \sensValue \in \sensVarSet\),
+    \begin{equation}
+        h(\sensValue) \geq \left[1 - (1-c)^{\order+1}\right]u(\sensValue) \enspace .
+        \label{eq:kloss_56}
+    \end{equation}
+    Besides, summing \autoref{eq:kloss_56} for every \(\sensValue' \neq \sensValue\) gives:
+    \(1 - h(\sensValue) \geq \left[1 - (1-c)^{\order+1}\right] \left(1 - u(\sensValue)\right)\), that is:
+    \begin{equation}
+        h(\sensValue) \leq (1-c)^{\order+1} + \left[1 - (1-c)^{\order+1}\right]u(\sensValue) \enspace .
+        \label{eq:kloss_57}
+    \end{equation}
+    By combining \autoref{eq:kloss_56} and \autoref{eq:kloss_57}, we deduce \autoref{eq:kloss}.
+\end{proof}
+Prest \etal{} proved the same result in their paper at \textsc{Crypto} 2019~\cite[Lemma~6]{prest_renyi_2019} with slightly different arguments based on \emph{random walks}.
+\autoref{thm:kloss} is an alternative proof only requiring standard results on probabilities.
+Indeed, one can then derive the so-called \emph{relative error} defined by Prest \etal{} from \autoref{eq:assumption_kloss} on which relies their noise amplification proof~\cite[Thm.~2]{prest_renyi_2019}.
+
+Notice by the way that following a similar reasoning from Aldous and Diaconis~\cite[Thm.~3]{aldous_shuffling_1986}, this result may be slightly relaxed, by only assuming that the condition stated in \autoref{eq:assumption_kloss} holds starting from a given order \(1 < \order' < \order+1\).
+It implies that the bound in \autoref{eq:kloss} becomes \((1-c)^{\frac{\order+1}{\order'}}\).
+Hence, we get a not only sufficient, but also necessary condition on the initial \glspl{pmf} \((h_i)_{i \in \llbracket 0, \order \rrbracket}\) to get a noise amplification, at the cost of a lower rate of convergence towards the uniform \gls{pmf}

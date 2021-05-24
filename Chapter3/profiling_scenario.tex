@@ -1,0 +1,36 @@
+
+    \begin{tikzpicture}[>=stealth',scale=0.8]
+        % Locations
+        \def\ClientToServer{++(6,0)}
+        \def\ServerToClient{++(-6,0)}
+        \def\NextStep{++(0,-1)}
+        \def\LifelineAtt{++(0,-6.5)}
+        \def\LifelineTarget{++(0,-4.5)}
+        \def\LifelineCharac{++(0,-2.5)}
+        % Lifelines
+        \path (0,0)              node[draw](Clone){Clone \(\target'\)} 
+                \ClientToServer node[draw] (Attacker) {Attacker \(\attacker\)}
+                \ClientToServer \LifelineCharac node[draw] (Target) {Target \(\target\)};
+        \draw (Attacker) -- \LifelineAtt (Target) -- \LifelineTarget (Clone) -- \LifelineCharac;
+        \draw[decoration={brace,mirror,raise=-0.0cm},decorate] (Clone) ++ (-2,0) -- \LifelineCharac node[left=8cm,above=1cm,rotate=90] {Profiling phase};
+        \draw[decoration={brace,raise=0.0cm},decorate] (Target) ++ (2,0) -- \LifelineTarget node[right=0.5cm,above=2cm,rotate=-90] {Attack phase};
+
+        \path (Attacker)
+                ++(0,-1) node (BeginCharac) {};
+        % \filldraw[fill=blue!30] (BeginProcess.west) rectangle (EndProcess.east);
+        % Characterization
+        \draw[->] (BeginCharac) -- node[above] {\(\p_1,\ldots,\p_{\numTracesProf}, \key_1,\ldots,\key_{\numTracesProf}\)} \ServerToClient (BeginCharac);
+        \draw[->] (BeginCharac) \ServerToClient \NextStep --node[above] {\(\xxx_1, \ldots, \xxx_{\numTracesProf}\)} \ClientToServer;
+
+        % Blocks
+        \path (Target)
+              ++(0,-1) node (BeginProcess) {}
+              ++(0,-1) node (EndProcess)   {};
+        % \filldraw[fill=blue!30] (BeginProcess.west) rectangle (EndProcess.east);
+        % Calls
+        \draw[->] (BeginProcess)\ServerToClient -- node[above] {\(\p_1,\ldots,\p_{Na}\)} (BeginProcess);
+        \draw[->] (EndProcess) -- node[above] {\(\ctx_1, \ldots, \ctx_{\numTracesAttack}, \xxx_1, \ldots, \xxx_{\numTracesAttack}\)}\ServerToClient;
+        % \draw[->] (EndProcess) -- node[above] {\(\xxx_1, \ldots, \xxx_{\numTracesAttack}\)} \ServerToClient;
+        \draw[->] (EndProcess)\ServerToClient ++(0, -1) -- node[above] {\(\disting{\attackSet}\)} \ClientToServer;
+        \draw[->] (EndProcess) ++ (0, -2) -- node[above] {\(\guessVec{\disting{\attackSet}}[\keyTest]\)} \ServerToClient;
+    \end{tikzpicture}

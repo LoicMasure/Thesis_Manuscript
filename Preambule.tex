@@ -1,0 +1,161 @@
+%% Copyright (C) 2014 Dorian Depriester
+%% http://blog.dorian-depriester.fr
+%%
+%% This file may be distributed and/or modified under the conditions
+%% of the LaTeX Project Public License, either version 1.3c of this
+%% license or (at your option) any later version. The latest version
+%% of this license is in:
+%%
+%%    http://www.latex-project.org/lppl.txt
+%%
+%% and version 1.3c or later is part of all distributions of LaTeX
+%% version 2006/05/20 or later.
+%%
+%% This work has the LPPL maintenance status `maintained'.
+%%
+%% The Current Maintainer of this work is Dorian Depriester
+%% <contact [at] dorian [-] depriester [dot] fr>.
+%%
+%% This is Preambule.tex for French PhD Thesis.
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%           Package List		       %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+%% Blind text
+\usepackage{blindtext}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%% Fonts and typo    
+\usepackage[utf8]{inputenc}		% LaTeX, comprend les accents !
+\usepackage[T1]{fontenc}
+		
+% \usepackage[frenchb]{babel}
+\usepackage{lmodern}
+\usepackage{ae,aecompl}			% Utilisation des fontes vectorielles modernes
+% \usepackage[upright]{fourier}
+\usepackage{palatino}
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% General overview of the document
+\usepackage{enumerate}
+\usepackage{enumitem}
+\usepackage[section]{placeins}	% Place un FloatBarrier à chaque nouvelle section
+\usepackage{epigraph}
+\usepackage[font={small}]{caption}
+\usepackage[nohints]{minitoc}		% Mini table des matières, en français
+\usepackage[notbib]{tocbibind}		% Ajoute les Tables	des Matières/Figures/Tableaux à la table des matières
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Maths                         
+\usepackage{amsmath}			% Permet de taper des formules mathématiques
+\usepackage{amssymb}			% Permet d'utiliser des symboles mathématiques
+\usepackage{amsfonts}			% Permet d'utiliser des polices mathématiques
+\usepackage{amsthm}				% Permet d'écrire des théorèmes
+\usepackage{nicefrac}			% Fractions 'inline'
+\usepackage{stmaryrd}			% Pour les brackets
+\usepackage{mathtools}			% Pour la KL div
+
+\newtheorem{theorem}{Theorem}
+\newtheorem{definition}{Definition}
+\newtheorem{proposition}{Proposition}
+\newtheorem{lemma}{Lemma}
+\newtheorem{remark}{Remark}
+\newtheorem{example}{Example}
+\newtheorem{problem}{Problem}
+\newtheorem{assum}{Assumption}
+\newtheorem{corollary}{Corollary}
+\newcommand{\definitionautorefname}{Definition}
+\newcommand{\propositionautorefname}{Proposition}
+\newcommand{\lemmaautorefname}{Lemma}
+\newcommand{\remarkautorefname}{Remark}
+\newcommand{\exampleautorefname}{Example}
+\newcommand{\problemautorefname}{Problem}
+\newcommand{\assumautorefname}{Assumption}
+\newcommand{\corollaryautorefname}{Corollary}
+
+% Renames sections with Capital letters
+\newcommand{\chapterautorefname}{Chapter}
+\newcommand{\sectionautorefname}{Section}
+\newcommand{\subsectionautorefname}{Subsection}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Tables & algorithms
+\usepackage{multirow}
+\usepackage{booktabs}
+\usepackage{colortbl}
+\usepackage{tabularx}
+\usepackage{multirow}
+\usepackage{threeparttable}
+\usepackage{etoolbox}
+	\appto\TPTnoteSettings{\footnotesize}
+\usepackage{algorithm,algorithmicx,algpseudocode} % For algorithms
+\newcommand{\algorithmautorefname}{Algorithm}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Graphics
+\usepackage{wrapfig}                   
+\usepackage{graphicx}			% Permet l'inclusion d'images
+\usepackage{subcaption}
+\usepackage{pdfpages}
+% \usepackage{rotating}
+\usepackage{pgfplots}
+	\usepgfplotslibrary{groupplots,dateplot}
+\usepackage{tikz}
+	\usetikzlibrary{backgrounds,automata,arrows,shadows,positioning, shapes}
+	\usetikzlibrary{decorations.pathreplacing,angles,quotes}
+	\pgfplotsset{width=7cm,compat=1.3}
+\usepackage{import}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Text shape        
+\usepackage{xspace}
+\usepackage{textcomp}
+\usepackage{array}
+\usepackage{hyphenat}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Browing through the document
+\usepackage[pdftex,pdfborder={0 0 0},
+			colorlinks=true,
+			linkcolor=blue,  % Changes hyperlink colors
+			citecolor=red,
+			pagebackref=true,
+			]{hyperref}	% Créera automatiquement les liens internes au PDF
+					% Doit être chargé en dernier (Sauf exceptions ci-dessous)
+			
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Packages qui doivent être chargés APRES hyperref	             
+\usepackage[top=2.5cm, bottom=2cm, left=3cm, right=2.5cm,
+			headheight=15pt]{geometry}
+
+\usepackage{fancyhdr}			% Entête et pieds de page. Doit être placé APRES geometry
+	\pagestyle{fancy}		% Indique que le style de la page sera justement fancy
+	\lfoot[\thepage]{} 		% gauche du pied de page
+	\cfoot{} 			% milieu du pied de page
+	\rfoot[]{\thepage} 		% droite du pied de page
+	\fancyhead[RO, LE] {}	
+	\setlength{\headheight}{25.5pt}
+	
+\usepackage[acronym,toc,numberedsection,ucmark]{glossaries}
+	\newglossary[nlg]{notation}{not}{ntn}{Notation} % Création d'un type de glossaire 'notation'
+	\makeglossaries
+	\loadglsentries{Glossary}			% Utilisation d'un fichier externe pour la définition des entrées (Glossaire.tex)	
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% CEA colors
+\RequirePackage{ceacolors}
+
+
+% Comments & todos
+\usepackage[textsize=tiny]{todonotes}  % disable to erase remaining comments
+\setlength{\marginparwidth}{2cm}
+\newcommand{\comLoic}[1]{\todo[color=blue!20, fancyline]{[Loïc] #1}} 

@@ -1,0 +1,62 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%                   INTRO CHAPTER 6                                            %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+In \autoref{sec:counter-measures}, when presenting the different counter-measures that a developer can use to protect an implementation against \gls{sca}, we essentially focused on two criteria:
+\begin{enumerate}
+    \item the resulting protected implementation must still remain acceptable for the final user, in particular in terms of runtime and memory;
+    \item it must guarantee, formally or empirically, the security level requested by the final user or the developer.
+\end{enumerate}
+Finding the counter-measure meeting those two constraints, often antagonist, is somehow the holy-grail quest of developers willing to prevent \gls{sca} on their devices.
+
+We have seen for example that group-based secret-sharing schemes are able to meet the second condition, to the detriment of the first one.
+However, we have not discussed yet in this thesis a third condition, namely how a developer can easily turn an unprotected code into a protected one.
+Indeed, although encryption standards such as \gls{aes} are designed to be easily implemented, their specifications do not take into account the development cost of versions protected against \gls{sca}.
+In practice, this third constraint turned out to be critical, because it required so far a careful hand-made protection of every possible sensitive intermediate state of the machine running the primitive at a low level -- \ie{} assembly or hardware.
+
+Some recent works propose ways to automatize the secret-sharing of sensitive intermediate computations~\cite{belaid_tornado_2020,belleville_maskara_2020}, with the hope to decrease the developer's hand-made design.
+The interest of this approach is thereby to combine this automated generation with a provable security assessment, made possible by the recent works of security proofs on secret-sharing -- see \autoref{sec:masking}.
+Nevertheless, the theoretical models proposed by the scientific community on which these tools rely do not always correspond to the physical reality of the devices designed by the industry.
+As a consequence, a hand-made verification of the automatically generated implementation might not always be excluded, thereby mitigating the interest of automatically generating secret-sharing.
+
+We have presented the code polymorphism counter-measure in \autoref{sec:hiding}, enabling to automatize the code randomization in a pervasive way at the scope of assembly instructions, in order to implement leakage hiding at a low cost in development.
+Moreover, we have seen that hiding is a lighter counter-measure in terms of runtime and memory complexity: the performance overhead for hiding is linear with the amount of shuffled operations or the number of dummy operations, while it is quadratic with the sharing order for secret-sharing.
+Therefore, one may wonder whether code polymorphism could be a good candidate as a way to meet the three constraints of a practically sound counter-measure evocated so far.
+Belleville \etal{} brought some evidences about the security of code polymorphism in a paper at \textsc{Taco}'19~\cite{belleville_automated_2019}.
+The latter study follows a series of works~\cite{agosta_code_2012,agosta_meet_2015,courousse_runtime_2016} proposing a way to efficiently (in the sense of the first constraint) implement code polymorphism.
+They propose a specific configuration of code transformations for which they emphasize empirical evidences of strong security level against the vast majority of the attacks.
+This particularly concerns the ones requiring the \glspl{poi} of the raw traces to be aligned with each other, \eg{} the \gls{cpa} or the \gls{gta}: the \gls{tvla} method based on T-tests (see \autoref{sec:characterization}) applied on several implementations of cryptographic primitives show that their protection prevents the target device from revealing its leakage, and a \gls{cpa} mounted against a protected implementation requires about several million traces whereas the same attack against the same unprotected target only required a few hundred traces to recover the secret key.
+
+\subsection{Problem Addressed in this Chapter}
+\label{sec:problem}
+
+Yet, although very promising, these results cannot draw an exhaustive guarantee concerning the security level against \gls{sca}, since other realistic scenarios involving more elaborated attacks have not been investigated.
+
+Indeed, on the one hand the SCA literature proposes other ways to outperform vertical attacks when facing hiding counter-measures.
+\emph{Re-synchronization} techniques might annihilate the misalignment effect occurred by code polymorphism, since it is successfully applied on hardware devices prone to jitter~\cite{nagashima_dpa_2007,van_woudenberg_improving_2011,durvaux_efficient_2012}.
+Likewise, \glspl{cnn} can circumvent some software and hardware de-synchronization counter-measures, in a sense similar to code polymorphism~\cite{cagli_convolutional_2017,kim_make_2019}.
+It is therefore of great interest to use those techniques to assess the security provided by some code polymorphism configurations against more elaborated attackers.
+
+On the other hand, until now the literature has only demonstrated the relevance of \gls{cnn} attacks on restricted traces whose size did not exceed \(5,000\) samples~\cite{cagli_convolutional_2017,prouff_study_2018,kim_make_2019,timon_non-profiled_2019,zaid_methodology_2019}, which is small, \eg{}, regarding the size of the raw traces in the public datasets of software \gls{aes} implementations used in those papers~\cite{dpa_v4,prouff_study_2018,coron_random_2009}.
+This requires to focus the trace acquisition to a tight window where the attacker is confident that the relevant leakage occurs.
+Unfortunately, this is not possible in presence of code polymorphism since it applies hiding in a systematic and pervasive way in the implementation.
+Likewise, other dimensionality reduction techniques like dedicated variants of \gls{pca}~\cite{standaert_using_2008} might be considered prior to the use of \glspl{cnn}.
+However, they do not theoretically provide any guarantee that relevant features will be extracted, especially for data prone to misalignment.
+As a consequence, attacking a polymorphic implementation necessarily requires to deal with large-scale traces.
+This generally spans serious issues in machine learning tasks known under the name of \emph{curse of dimensionality}~\cite{shalev-shwartz_understanding_2014}.
+That is why it currently remains an open question whether \gls{cnn} attacks can scale on larger traces, or whether it represents a technical issue that some configurations of code polymorphism might benefit against these attacks.
+Hence, both problems, namely evaluating code polymorphism and addressing large-scale traces \gls{sca}, are closely intertwined.
+
+\subsection{Outline of the Chapter}
+\label{sec:contribution_esorics}
+
+In the remaining of this chapter, we tackle the two problems presented so far by extending the security evaluation provided by Belleville \etal{}~\cite{belleville_automated_2019}.
+The evaluation aims to assess the security of the highest code polymorphism configuration they used, on same implementations, against stronger attackers.
+
+% Method
+Our evaluation considers a wide spectrum of threat models, ranging from automated attacks affordable by a layman attacker, to state-of-the-art techniques.
+The whole evaluation setup is detailed in \autoref{sec:method}.
+In particular, we propose to adapt the architectures used in the literature of \gls{cnn} attacks, in order to handle the technical challenge of large scale traces.
+This is presented in \autoref{sec:cnn_archi_esorics}.
+
+% Results
+Finally, the outcomes of our evaluations are presented in \autoref{sec:results}, and will serve as a ground for discussions proposed in \autoref{sec:discussion}.

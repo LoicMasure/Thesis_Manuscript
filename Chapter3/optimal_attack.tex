@@ -1,0 +1,43 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%                           RESULT HEUSER                                      %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+When addressing \autoref{final_task}, it is relevant to first recall a key result from Heuser \etal{} presented at \textsc{Ches}'14: an analytical optimal solution to \autoref{final_task} is given by the following theorem.
+\begin{theorem}[{Optimal Distinguisher~\cite[Thm.~1]{heuser_good_2014}}]
+    \label{thm:opt_sol_prob1}
+    The most efficient attacker \(\attacker\) for the device \(\target\) is the one using the maximum likelihood -- defined in \autoref{sec:max_like} -- as a distinguisher, \ie{},
+    \begin{equation}
+        \MLEscore{\attackSet}[\key] = \sum_{i=1}^{\numTracesAttack} \log \prob{\XXX_i = \xxx_i \given \Z_i = \miniEncrypt{\p_i, \key}} \enspace , 
+        \label{eq:mle_def}
+    \end{equation}
+    \ie{}, \(\numTracesAttack \left( \MLEscore{\attackSet} \right) = \numTracesAttackOpt\).
+\end{theorem}
+At this stage, it is relevant to comment the different elements of \autoref{eq:mle_def}:
+\begin{itemize}
+    \item \textbf{The Leakage model} denotes here the \gls{pdf} \(\prob{\XXX \given \Z}\).
+    More generally, it is the way to describe the physical dependency between one leakage trace \(\XXX\) and the sensitive target variable \(\Z\).
+    \item \textbf{The Distinguisher} properly said is the way how the information extracted on each trace through the leakage model is combined to compute the scores.
+    Here in particular, the distinguisher is the sum of the log probabilities of the likelihood function.
+\end{itemize}
+
+% Advantage
+We may discuss its impact on our attack gray-box scenario.
+On the one hand, it implies that the optimal attacker \(\attacker\) is fully determined by the choice of the maximum likelihood distinguisher, thereby addressing the last remaining degree of freedom.
+This is useful in order to build provably secure implementations against any type of attacker: it suffices to prove that the given implementation is secure against an attacker using the maximum likelihood distinguisher.
+
+% Drawback
+On the other hand, the major drawback of such a distinguisher is that it implicitly requires the full knowledge of the leakage model.
+The latter one typically depends on the target implementation \(\target\), both at software and hardware levels, as on the acquisition environment of the physical measurements.
+Therefore, perfectly knowing the leakage model turns out to be practically impossible as is.
+In other words, the analytical solution of \autoref{final_task} is not informative for the \gls{sca} evaluator.
+To circumvent this issue two approaches have been proposed in the literature.
+
+The first one -- historically speaking -- consists in making assumptions on the leakage model depending on the knowledge of the attacker or the evaluator on the device.
+These assumptions may be strong and even non-realistic although representing reasonable approximation errors.
+The counter-part to this approach is that other distinguishers, possibly less sensitive to approximation errors, may lead to more efficient attacks compared to the maximum likelihood distinguisher.
+This approach, presented in \autoref{sec:non_profiled_attacks} is nowadays called \emph{unprofiled} attacks, in opposition to the second approach, hence called \emph{profiled} attacks.
+
+The second scenario allows to still assume the attacker to have access to the exact leakage model -- or at least a good approximation of it for some metric that must be previously defined, in order to address the worst-case scenario.
+
+To this end, a preliminary phase of the attack requires to characterize the leakage behavior of the device.
+This will be detailed in \autoref{sec:profiled_attacks}.
+This approach enables to reformulate \autoref{final_task} in a slightly modified version, namely \autoref{final_task_prof}, that can be more practically useful.

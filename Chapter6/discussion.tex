@@ -1,0 +1,34 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%                               DISCUSSION                                     %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+So far, \autoref{sec:results} has presented and summarized the results of the attacks, depending on the threat models defined in \autoref{sec:threat_models}, against two implementations of a cryptographic primitive, protected by a given configuration of code polymorphism.
+
+This section proposes to discuss these results, the underlying assumptions behind the attacks, and eventually their consequences.
+
+\subsubsection{Choice of our CNN Architecture.}
+The small amount of queries to succeed the attack \attCNN{}, conducted on both implementations, shows the relevance of our choice of \gls{cnn} architecture.
+This illustrates that an end-to-end attack with \glspl{cnn} is possible when targeting large scale traces, without necessarily requiring very deep architectures.
+
+We emphasize that there may be other choices of parameters for the convolutional architecture giving relevant results as well, if not better.
+Yet, we do not find necessary to further investigate this way here.
+The obtained minimal number of queries \(\numTracesAttackOpt\) was low enough so that any improvement in the \gls{cnn} performances is not likely to change our interpretations of the vulnerability of the targets against \attCNN{}.
+
+% Resnets
+In particular, the advantage of \glspl{resnet}~\cite{he_deep_2015} broadly used in image recognition typically relies on the necessity to use deep convolutional architectures in this field~\cite{simonyan_vgg_2015}, as recalled in \autoref{remark:2D_VGG}.
+By the way, promising results have been obtained over the past few months with \glspl{resnet} in SCA~\cite{zhou_deep_2019,gohr_efficient_2020}.
+However, following the discussion of \autoref{fig:layers_1D}, we empirically verified here that we can take advantage of the distinctive features of side-channel traces to constrain the depth of our model and avoid typical issues related to deep architectures -- \ie{} vanishing gradient -- that \glspl{resnet} are supposed to circumvent~\cite{he_deep_2015}.
+
+
+\subsubsection{On the Security of Code Polymorphism}
+\label{sec:certification}
+Our study exhibits that the attacks \attLDADesync{} and \attCPASync{} are such that respectively \(\numTracesAttack(\attLDADesync)\) and \(\numTracesAttack(\attCPASync)\) are high enough to enable a key refreshing period reasonably high, without compromising the confidentiality of the key.
+Unfortunately, this does not hold in presence of a stronger attacker having access to an open sample, as emphasized by attacks \attLDASync{} and \attCNN{}, where a secret key can be recovered within the typical duration of a session key.
+This may be critical at first sight since massive \gls{iot} applications often rely on \gls{cots} devices, which implies that open samples may be easily accessible to any adversary.
+Thus, this study claims that though code polymorphism is a promising tool to increase the hardness of \gls{sca} against embedded devices, a sound polymorphic configuration, eventually coupled with other counter-measures, is yet to be found, in order to protect against state-of-the-art \gls{sca}.
+Nevertheless, the toolchain used by Belleville \etal{}~\cite{belleville_automated_2019} allows to explore many configurations beside the one considered here, the exploration of the securing capabilities of the toolchain is then beyond the scope of this thesis, and left as an open question for further works.
+
+% Link with the Bronchain's works
+More generally, this issue can be viewed from the perspective of the problem discussed by Bronchain \etal{}\ about the difficulty to prevent side-channel attacks in \gls{cots} devices, even with sophisticated counter-measures~\cite{bronchain_dissection_2020}.
+First, our experimental target is intrinsically highly vulnerable to \gls{sca}.
+Second, the use of software implementations of cryptographic primitives offers a large attack surface, which remains highly difficult to protect especially with a hiding counter-measure alone.
+This underlines the fact that a component may need to use hiding in combination with other counter-measures, \eg{}, secret-sharing, to be secured against a strong side-channel attacker model. 

@@ -1,0 +1,34 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%                           ILLUSTRATION MASKING                               %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{tikzpicture}
+    % Nodes
+    \node (f) [minimum size=1.25cm, rounded corners=1ex, fill=red!20, draw] {\(\widetilde{\miniEncrypt{}}\)};
+    \node (p) [left of=f, node distance=3cm] {\(\p\)};
+    \node (k) [above of=f, node distance=3cm] {\(\key\)};
+    \node (c) [right of=f, node distance=3cm] {\(\z\)};
+    % Random encoding of P
+    \node (p_shares) [left of=f, node distance=1.5cm, color=gray] {\(\begin{array}{c}
+        \p_1 \\
+        \vdots \\
+        \p_\order
+    \end{array}\)};
+
+    % Random encoding of K
+    \node (k_shares) [above of=f, node distance=1.5cm, color=gray] {\(\key_1, \ldots, \key_\order\)};
+
+    % Decoding of C
+    \node (c_shares) [right of=f, node distance=1.5cm, color=gray] {\(\begin{array}{c}
+        \z_1 \\
+        \vdots \\
+        \z_\order
+    \end{array}\)};
+
+    % Arrows
+    \draw[-latex] (p) -- node[above, color=gray]{\tiny Encode} (p_shares);
+    \draw[-latex] (p_shares) -- (f);
+    \draw[-latex] (k) -- node[right, color=gray]{\tiny Encode} (k_shares);
+    \draw[-latex] (k_shares) -- (f);
+    \draw[-latex] (f) -- (c_shares);
+    \draw[-latex] (c_shares) -- node[above, color=gray]{\tiny Decode} (c);
+\end{tikzpicture}
